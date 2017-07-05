@@ -125,12 +125,13 @@ var channelToID = {};
     client.connect();
     client.on("chat", function(channel, userstate, message, self) {
         console.log("Chat message from " + channel);
-        for (var i = 0; i < message.length; i++) {
-            if (message.charCodeAt(i) >= 48 && message.charCodeAt(i) <= 57) {
-                addVote(channelToID[channel], message.charCodeAt(i) - 48, userstate["user-id"]);
-                break;
+        if (message.length === 1) {
+            if (message.charCodeAt(0) >= 49 && message.charCodeAt(0) <= 57) {
+                addVote(channelToID[channel], message.charCodeAt(0) - 49, userstate["user-id"]);
+                return;
             }
         }
+
 
     });
     client.on("join", function(channel, username, self) {
@@ -258,7 +259,9 @@ app.post('/api/poll', passport.authenticate("bearer", {session: false}), functio
     console.log(req.body);
     if (req.body.question && req.body.answers) {
         client.join("#ejg_dnd");
+
         res.json(createPoll(Number(req.user.userid), req.body.question, req.body.answers));
+        client.say("#ejg_dnd", "Poll has been created with question '" + req.body.question + "'");
     }
 
     else {
