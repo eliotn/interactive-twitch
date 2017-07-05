@@ -186,14 +186,14 @@ passport.use(new twitchStrategy({
         if (!results) {
             console.log("user needs to be created");
             console.log(profile);
-            users.insert({"userid": profile.id, "username":profile.display_name, "access_token":accessToken, "tokenUpdateTime":new Date()}, function (err) {
+            users.insert({"userid": profile.id, "username":profile.displayName, "access_token":accessToken, "tokenUpdateTime":new Date()}, function (err) {
                 if (err) return done(err);
                 return done(null, {"access_token":accessToken});
             });
         }
         else {
             console.log("user already logged in!");
-            users.updateOne({"userid": profile.id}, {$set: {"access_token":accessToken, "tokenUpdateTime":new Date()}});
+            users.updateOne({"userid": profile.id}, {$set: {"username":profile.displayName, "access_token":accessToken, "tokenUpdateTime":new Date()}});
             return done(null, {"access_token":accessToken});
         }
     });
