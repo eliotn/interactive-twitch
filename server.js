@@ -258,6 +258,7 @@ app.get('/api/poll', passport.authenticate("bearer", {session: false}), function
 });
 app.post('/api/poll', passport.authenticate("bearer", {session: false}), function (req, res) {
     console.log(req.body);
+    console.log(req.user);
     if (req.body.question && req.body.answers) {
         client.join("#" + req.user.username);
 
