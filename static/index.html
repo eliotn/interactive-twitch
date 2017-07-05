@@ -97,6 +97,7 @@
         _xhttp.open("POST", "/api/poll" + location.search, false);
         _xhttp.setRequestHeader('Content-Type', 'application/json');
         console.log(question);
+	//make async
         _xhttp.send(JSON.stringify({
           "question":question,
           "answers":[answer1, answer2, answer3, answer4]
@@ -117,7 +118,8 @@
         //crude
         console.log("Sending");
         _xhttp.open("GET", "/api/poll" + location.search, false);
-        _xhttp.send();
+        //make async
+	_xhttp.send();
         var poll_labels = [];
         var poll_data = [];
         var bar_colors = [];

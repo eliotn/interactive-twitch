@@ -59,10 +59,8 @@ function addVote(pollid, vote, user) {
             result_json = {"err": "Poll not found"};
             return;
         }
-        var voteToInc = {};
-        voteToInc["votes." + String(vote)] = 1;
         polls.updateOne({"userid": Number(pollid)},
-        {$inc: voteToInc}, function(err, results) {
+        {$inc: {["votes." + String(vote)]:1}}, function(err, results) {
                 if (err) {result_json = {"err": err};}
                 else {result_json = {"Note:": "vote counted"}};
         });
