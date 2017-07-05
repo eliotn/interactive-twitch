@@ -120,31 +120,32 @@
         _xhttp.open("GET", "/api/poll" + location.search, false);
         //make async
         _xhttp.onload = function (e) {
-	if (_xhttp.readyState === 4 && _xhttp.status === 200) {
-	var poll_labels = [];
-        var poll_data = [];
-        var bar_colors = [];
-        var response = JSON.parse(_xhttp.responseText);
-        for (var i = 0; i < response.votes.length; i++) {
-          poll_labels.push(response.answers[i]);
-          poll_data.push(response.votes[i]);
-          bar_colors.push(["red", "orange", "blue", "yellow", "green"][i%5]);
+	         if (_xhttp.readyState === 4 && _xhttp.status === 200) {
+	            var poll_labels = [];
+              var poll_data = [];
+              var bar_colors = [];
+              var response = JSON.parse(_xhttp.responseText);
+              for (var i = 0; i < response.votes.length; i++) {
+                poll_labels.push(response.answers[i]);
+                poll_data.push(response.votes[i]);
+                bar_colors.push(["red", "orange", "blue", "yellow", "green"][i%5]);
+              }
+              var myDoughnutChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {labels: poll_labels,
+                  datasets: [{
+                    label: "My First dataset",
+                    backgroundColor: bar_colors,
+                    borderColor: 'rgb(255, 99, 132)',
+                    data: poll_data,
+                  }]},//JSON.parse(xhttp.responseText),
+                  options: {}
+              });
+              polltitle.innerText = response.question;
+            }
         }
-        var myDoughnutChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {labels: poll_labels,
-        datasets: [{
-            label: "My First dataset",
-            backgroundColor: bar_colors,
-            borderColor: 'rgb(255, 99, 132)',
-            data: poll_data,
-            }]},//JSON.parse(xhttp.responseText),
-            options: {}
-          });
-        polltitle.innerText = response.question;
+        _xhttp.send();
       }
-      }
-      _xhttp.send();
 
     </script>
   </body>
