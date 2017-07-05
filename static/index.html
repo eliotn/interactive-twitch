@@ -119,8 +119,9 @@
         console.log("Sending");
         _xhttp.open("GET", "/api/poll" + location.search, false);
         //make async
-	_xhttp.send();
-        var poll_labels = [];
+        _xhttp.onlone = function (e) {
+	if (_xhttp.readyState === 4 && _xhttp.status === 200) {
+	var poll_labels = [];
         var poll_data = [];
         var bar_colors = [];
         var response = JSON.parse(_xhttp.responseText);
@@ -141,6 +142,7 @@
             options: {}
           });
         polltitle.innerText = response.question;
+      }
       }
       
     </script>
