@@ -185,6 +185,7 @@ passport.use(new twitchStrategy({
         }
         if (!results) {
             console.log("user needs to be created");
+            console.log(profile);
             users.insert({"userid": profile.id, "username":profile.display_name, "access_token":accessToken, "tokenUpdateTime":new Date()}, function (err) {
                 if (err) return done(err);
                 return done(null, {"access_token":accessToken});
@@ -258,7 +259,6 @@ app.get('/api/poll', passport.authenticate("bearer", {session: false}), function
 });
 app.post('/api/poll', passport.authenticate("bearer", {session: false}), function (req, res) {
     console.log(req.body);
-    console.log(req.user);
     if (req.body.question && req.body.answers) {
         client.join("#" + req.user.username);
 
