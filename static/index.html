@@ -119,13 +119,13 @@
         console.log("Sending");
         _xhttp.open("GET", "/api/poll" + location.search, false);
         //make async
-        _xhttp.onload = function (e) {
+        _xhttp.onreadystatechange = function (e) {
 	         if (_xhttp.readyState === 4 && _xhttp.status === 200) {
 	            var poll_labels = [];
               var poll_data = [];
               var bar_colors = [];
               var response = JSON.parse(_xhttp.responseText);
-              for (var i = 0; i < response.votes.length; i++) {
+              for (var i = 0; i < response.answers.length; i++) {
                 poll_labels.push(response.answers[i]);
                 poll_data.push(response.votes[i]);
                 bar_colors.push(["red", "orange", "blue", "yellow", "green"][i%5]);
