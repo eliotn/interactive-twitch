@@ -104,6 +104,7 @@ function createPoll(pollid, question, answerlist) {
     return result_json;
 }
 
+
 var tmi = require("tmi.js");
 var request = require('request');
 var client;
@@ -126,7 +127,7 @@ var channelToID = {};
     client.on("chat", function(channel, userstate, message, self) {
         console.log("Chat message from " + channel);
         if (message.length === 1) {
-            if (message.charCodeAt(0) >= 49 && message.charCodeAt(0) <= 57) {
+            if (message.charCodeAt(0) >= 48 && message.charCodeAt(0) <= 57) {
                 addVote(channelToID[channel], message.charCodeAt(0) - 49, userstate["user-id"]);
                 return;
             }
@@ -184,7 +185,7 @@ passport.use(new twitchStrategy({
         }
         if (!results) {
             console.log("user needs to be created");
-            users.insert({"userid": profile.id, "access_token":accessToken, "tokenUpdateTime":new Date()}, function (err) {
+            users.insert({"userid": profile.id, "username":profile.display_name, "access_token":accessToken, "tokenUpdateTime":new Date()}, function (err) {
                 if (err) return done(err);
                 return done(null, {"access_token":accessToken});
             });
@@ -230,7 +231,7 @@ passport.use(
 app.get('/auth/twitch/', passport.authenticate("twitch", {session: false}));
 app.get('/auth/twitch/callback', passport.authenticate("twitch", {session:false, failureRedirect: '/'}), function (req, res) {
 
-    res.redirect('/?access_token=' + req.user.access_token);
+    res.redirect('/?access_token=' + req.user.username);
 });
 app.put('/api/vote/:pollid/:vote', function (req, res) {
     var voteresult = addVote(Number(req.params.pollid), req.params.vote-1);
@@ -258,7 +259,7 @@ app.get('/api/poll', passport.authenticate("bearer", {session: false}), function
 app.post('/api/poll', passport.authenticate("bearer", {session: false}), function (req, res) {
     console.log(req.body);
     if (req.body.question && req.body.answers) {
-        client.join("#ejg_dnd");
+        client.join("#" + req.user.display_name);
 
         res.json(createPoll(Number(req.user.userid), req.body.question, req.body.answers));
         client.say("#ejg_dnd", "Poll has been created with question '" + req.body.question + "'");
