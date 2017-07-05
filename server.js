@@ -115,6 +115,12 @@ var channelToID = {};
             username: "ejg_dnd",
             password: OAUTH_SECRET
         },
+	options: {
+    		debug: true,
+  	},
+  	connection: {
+    		reconnect: true,
+  	},
         channels: ['#hardlydifficult']
     });
     client.connect();
@@ -241,7 +247,7 @@ app.get('/api/poll', passport.authenticate("bearer", {session: false}), function
             return;
         }
         if (!results) {
-            res.json({});
+            res.json({"err":"This user does not have a poll."});
             return;
         }
         var object = {"question":results.question, "answers":results.answers, "votes":results.votes};
