@@ -10,7 +10,7 @@
   </head>
   <body>
 
-    
+
     <div class="grid-container">
       <div class="grid-x grid-padding-x">
         <div class="large-8 cell">
@@ -25,13 +25,13 @@
             <canvas id="myChart" width="100" height="100"></canvas>
         </div>
       </div>
-     
+
       <ul class="tabs" data-tabs id="twitch-tabs">
 	<li class="tabs-title is-active"><a href="#vote" aria-selected="true">Poll</a></li>
 	<li class="tabs-title"><a href="#pictionary">Pictionary</a></li>
       </ul>
       <div class="tabs-content" data-tabs-content="twitch-tabs">
-      <div class="tabs-panel is-active" id="vote"> 
+      <div class="tabs-panel is-active" id="vote">
       <div class="grid-x grid-padding-x">
         <div class="large-12 cell">
           <label>Question</label>
@@ -108,7 +108,7 @@
           "answers":[answer1, answer2, answer3, answer4]
           }
         );
-        
+
       }
       var _xhttp = new XMLHttpRequest();
       var ctx = document.getElementById('myChart').getContext('2d');
@@ -119,7 +119,7 @@
         console.log("Sending");
         _xhttp.open("GET", "/api/poll" + location.search, false);
         //make async
-        _xhttp.onlone = function (e) {
+        _xhttp.onload = function (e) {
 	if (_xhttp.readyState === 4 && _xhttp.status === 200) {
 	var poll_labels = [];
         var poll_data = [];
@@ -144,7 +144,8 @@
         polltitle.innerText = response.question;
       }
       }
-      
+      _xhttp.send();
+
     </script>
   </body>
 </html>
