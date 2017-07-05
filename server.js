@@ -4,7 +4,7 @@
 const SERVER = "test-eliotn.c9users.io";
 const PORT = process.env.PORT || 3000;
 const DROP_DATA = true;
-const MONGO_URL = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || process.env.MONGO_URL || 'mongodb://localhost:27017/twitchvotes';
+const MONGO_URL = process.env.MONGO_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/twitchvotes';
 const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const OAUTH_SECRET = process.env.OAUTH_SECRET;
 const TWITCH_SECRET = process.env.TWITCH_SECRET;
