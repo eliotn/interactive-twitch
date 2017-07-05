@@ -263,6 +263,7 @@ app.post('/api/poll', passport.authenticate("bearer", {session: false}), functio
         client.join("#" + req.user.username);
 
         res.json(createPoll(Number(req.user.userid), req.body.question, req.body.answers));
+        channelToID["#" + req.user.username] = req.user.userid;
         client.say("#" + req.user.username, "Poll has been created with question '" + req.body.question + "'");
     }
 
