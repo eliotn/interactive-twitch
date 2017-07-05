@@ -126,7 +126,7 @@ var channelToID = {};
     client.connect();
     client.on("chat", function(channel, userstate, message, self) {
         console.log("Chat message from " + channel);
-        for (var i = 0; i < message.length; i++)
+        for (var i = 0; i < message.length; i++) {
             if (message.charCodeAt(i) >= 49 && message.charCodeAt(i) <= 57) {
                 addVote(channelToID[channel], message.charCodeAt(i) - 49, userstate["user-id"]);
                 return;
