@@ -82,10 +82,9 @@ function createPoll(pollid, question, answerlist) {
             return result_json;
         }
         //properly format answers
-        var answers = [];
+        var answers = answerlist;
         var votes = [];
         for (var answer in answerlist) {
-            answers.push(answer);
             votes.push(0);
         }
 
