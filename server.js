@@ -126,9 +126,9 @@ var channelToID = {};
     client.connect();
     client.on("chat", function(channel, userstate, message, self) {
         console.log("Chat message from " + channel);
-        if (message.length === 1) {
-            if (message.charCodeAt(0) >= 48 && message.charCodeAt(0) <= 57) {
-                addVote(channelToID[channel], message.charCodeAt(0) - 49, userstate["user-id"]);
+        for (var i = 0; i < message.length; i++)
+            if (message.charCodeAt(i) >= 49 && message.charCodeAt(i) <= 57) {
+                addVote(channelToID[channel], message.charCodeAt(i) - 49, userstate["user-id"]);
                 return;
             }
         }
@@ -231,7 +231,7 @@ passport.use(
 app.get('/auth/twitch/', passport.authenticate("twitch", {session: false}));
 app.get('/auth/twitch/callback', passport.authenticate("twitch", {session:false, failureRedirect: '/'}), function (req, res) {
 
-    res.redirect('/?access_token=' + req.user.username);
+    res.redirect('/?access_token=' + req.user.access_token);
 });
 app.put('/api/vote/:pollid/:vote', function (req, res) {
     var voteresult = addVote(Number(req.params.pollid), req.params.vote-1);
@@ -259,10 +259,10 @@ app.get('/api/poll', passport.authenticate("bearer", {session: false}), function
 app.post('/api/poll', passport.authenticate("bearer", {session: false}), function (req, res) {
     console.log(req.body);
     if (req.body.question && req.body.answers) {
-        client.join("#" + req.user.display_name);
+        client.join("#" + req.user.username);
 
         res.json(createPoll(Number(req.user.userid), req.body.question, req.body.answers));
-        client.say("#ejg_dnd", "Poll has been created with question '" + req.body.question + "'");
+        client.say("#" + req.user.username, "Poll has been created with question '" + req.body.question + "'");
     }
 
     else {
