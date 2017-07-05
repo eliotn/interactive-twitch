@@ -37,7 +37,7 @@ MongoClient.connect(MONGO_URL, function(err, database) {
     if (DROP_DATA) {//utility function to retest with new data
         users.drop();
         polls.drop();
-        //tokens have a lifetime of 2400 seconds (60 minutes) 
+        //tokens have a lifetime of 2400 seconds (60 minutes)
         users.createIndex({"tokenUpdateTime" : 1}, {"expireAfterSeconds" : 2400});
     }
 });
@@ -54,7 +54,7 @@ function addVote(pollid, vote, user) {
             result_json = {"err":err};
             return;
         }
-        
+
         if (!results || vote < 0 || results.answers.length < vote ) {
             result_json = {"err": "Poll not found"};
             return;
@@ -68,7 +68,7 @@ function addVote(pollid, vote, user) {
         if (user) {
             polls.updateOne({"userid": Number(pollid)}, {$push: {"usersvoted":user}});
         }
-        
+
     });
     return result_json;
 }
@@ -88,7 +88,7 @@ function createPoll(pollid, question, answerlist) {
             answers.push(answer);
             votes.push(0);
         }
-            
+
         if (!results) {
             console.log("poll needs to be created");
             polls.insert({"usersvoted":[], "userid": Number(pollid), "question": question, "answers":answers, "votes":votes}, function (err) {
@@ -115,17 +115,18 @@ var channelToID = {};
             username: "ejg_dnd",
             password: OAUTH_SECRET
         },
-        channels: []
+        channels: ['#hardlydifficult']
     });
     client.connect();
     client.on("chat", function(channel, userstate, message, self) {
+        console.log("Chat message from " + channel);
         for (var i = 0; i < message.length; i++) {
             if (message.charCodeAt(i) >= 48 && message.charCodeAt(i) <= 57) {
                 addVote(channelToID[channel], message.charCodeAt(i) - 48, userstate["user-id"]);
                 break;
             }
         }
-        
+
     });
     client.on("join", function(channel, username, self) {
         if (self) {
@@ -184,13 +185,13 @@ passport.use(new twitchStrategy({
         }
         else {
             console.log("user already logged in!");
-            users.updateOne({"userid": profile.id}, {$set: {"access_token":accessToken, "tokenUpdateTime":new Date()}});  
+            users.updateOne({"userid": profile.id}, {$set: {"access_token":accessToken, "tokenUpdateTime":new Date()}});
             return done(null, {"access_token":accessToken});
         }
     });
     console.log(JSON.stringify(profile));
      //put data we want access to in the callback here
-        
+
 }));
 
 
@@ -222,7 +223,7 @@ passport.use(
 //thanks https://jeroenpelgrims.com/token-based-sessionless-auth-using-express-and-passport
 app.get('/auth/twitch/', passport.authenticate("twitch", {session: false}));
 app.get('/auth/twitch/callback', passport.authenticate("twitch", {session:false, failureRedirect: '/'}), function (req, res) {
-    
+
     res.redirect('/?access_token=' + req.user.access_token);
 });
 app.put('/api/vote/:pollid/:vote', function (req, res) {
@@ -254,7 +255,7 @@ app.post('/api/poll', passport.authenticate("bearer", {session: false}), functio
         client.join("#ejg_dnd");
         res.json(createPoll(Number(req.user.userid), req.body.question, req.body.answers));
     }
-        
+
     else {
         res.json({"Note":"You posted an invalid poll"});
     }
@@ -266,16 +267,16 @@ app.get('/api/debug/testlogin',  passport.authenticate("bearer", {session: false
 app.get('/api/debug/users',  passport.authenticate("bearer", {session: false}), function (req, res) {
     users.find().toArray(function(err, result) {
         if (err) throw err;
-        res.json({'users':JSON.stringify(result)}); 
+        res.json({'users':JSON.stringify(result)});
     });
 });
 app.get('/api/debug/polls',  passport.authenticate("bearer", {session: false}), function (req, res) {
     polls.find().toArray(function(err, result) {
         if (err) throw err;
-        res.json({'polls':JSON.stringify(result)}); 
+        res.json({'polls':JSON.stringify(result)});
     });
 });
-    
+
 
 app.listen(PORT, function() {
     console.log("listening on port " + PORT);
