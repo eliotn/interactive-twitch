@@ -110,12 +110,10 @@ var request = require('request');
 var client;
 const fs = require('fs');
 var channelToID = {};
-fs.readFile("secret-oauth", "utf-8", function(err, oauthpwd) {
-    if (err) throw err;
     client = new tmi.client({
         identity: {
             username: "ejg_dnd",
-            password: oauthpwd
+            password: OAUTH_SECRET
         },
         channels: []
     });
@@ -155,7 +153,6 @@ fs.readFile("secret-oauth", "utf-8", function(err, oauthpwd) {
         }
     });
 
-});
 
 
 //use passport to connect with twitch and get an access key
