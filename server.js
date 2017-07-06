@@ -1,7 +1,7 @@
 //TODO: figure out why there seems to be a double execute sometime with twitch
 //passport
 
-const SERVER = process.env.SERVER_URL || "test-eliotn.c9users.io";
+const SERVER = process.env.SERVER_URL || "https://test-eliotn.c9users.io";
 const PORT = process.env.PORT || 3000;
 const DROP_DATA = true;
 const MONGO_URL = process.env.MONGO_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/twitchvotes';
@@ -174,7 +174,7 @@ var BearerStrategy = require("passport-http-bearer").Strategy;
 passport.use(new twitchStrategy({
     clientID: TWITCH_CLIENT_ID,
     clientSecret: TWITCH_SECRET,
-    callbackURL: "https://" + SERVER + "/auth/twitch/callback",
+    callbackURL: SERVER + "/auth/twitch/callback",
     scope: "user_read",
     session: false
 }, function(accessToken, refreshToken, profile, done) {
