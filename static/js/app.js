@@ -8,6 +8,7 @@ function addAnswer() {
 }
 
 function submitPoll() {
+  var _xhttp = new XMLHttpRequest();
   var question = document.getElementById('question').value;
   var answer1 = document.getElementById('answer1').value;
   var answer2 = document.getElementById('answer2').value;
@@ -21,6 +22,10 @@ function submitPoll() {
     "question": question,
     "answers": [answer1, answer2, answer3, answer4]
   }));
+  if (_xhttp.status === 401) {
+      unauthorized();
+      return;
+  }
   console.log({
     "question": question,
     "answers": [answer1, answer2, answer3, answer4]
@@ -28,11 +33,21 @@ function submitPoll() {
   getPoll();
 }
 
+function unauthorized() {
+  window.location.href = '/';
+}
+
 function getPoll() {
+  var _xhttp = new XMLHttpRequest();
   document.getElementById('question').classList;
   _xhttp.open("GET", "/api/poll" + location.search, false);
   //make async
   _xhttp.onreadystatechange = function(e) {
+    if ( _xhttp.status === 401) {
+      console.log()
+      unauthorized();
+      return;
+    }
     if (_xhttp.readyState === 4 && _xhttp.status === 200) {
       var poll_labels = [];
       var poll_data = [];
@@ -73,7 +88,7 @@ function getPoll() {
   }
   _xhttp.send();
 }
-var _xhttp = new XMLHttpRequest();
+
 var ctx = document.getElementById('myChart').getContext('2d');
 var polltitle = document.getElementById('polltitle');
 console.log(location.search);

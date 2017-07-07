@@ -16,7 +16,7 @@ const app = express();
 
 //setup file server
 const path = require('path');
-app.use(express.static(path.join(__dirname, 'static')));
+
 
 var MongoClient = require('mongodb').MongoClient;
 
@@ -233,7 +233,7 @@ passport.use(
 app.get('/auth/twitch/', passport.authenticate("twitch", {session: false}));
 app.get('/auth/twitch/callback', passport.authenticate("twitch", {session:false, failureRedirect: '/'}), function (req, res) {
 
-    res.redirect('/activity.html?access_token=' + req.user.access_token);
+    res.redirect('/activity?access_token=' + req.user.access_token);
 });
 app.get('/auth/logout', passport.authenticate("bearer", {session: false, failureRedirect: '/'}), function (req, res) {
     users.updateOne({"access_token": req.user.access_token}, {$set: {"access_token":0}});
@@ -291,6 +291,29 @@ app.get('/api/debug/polls',  passport.authenticate("bearer", {session: false}), 
         if (err) throw err;
         res.json({'polls':JSON.stringify(result)});
     });
+});
+
+//app.use(express.static(path.join(__dirname, 'static/css')));
+//app.use(express.static(path.join(__dirname, 'static/js')));
+
+//keep css/js files publicly accessible
+app.get('/css/:filename', function (req, res) {
+    res.sendFile(path.join(__dirname, 'static/css/' + req.params.filename));
+});
+app.get('/js/:filename', function (req, res) {
+    res.sendFile(path.join(__dirname, 'static/js/' + req.params.filename));
+});
+app.get('/js/vendor/:filename', function (req, res) {
+    res.sendFile(path.join(__dirname, 'static/js/vendor/' + req.params.filename));
+});
+
+app.get('/activity', function (req, res) {
+    
+    res.sendFile(path.join(__dirname, 'static/activity.html'));
+});
+
+app.get('/', function (req, res) {
+    res.sendFile(path.join(__dirname, 'static/index.html'));
 });
 
 
