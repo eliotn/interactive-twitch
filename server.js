@@ -235,6 +235,10 @@ app.get('/auth/twitch/callback', passport.authenticate("twitch", {session:false,
 
     res.redirect('/activity.html?access_token=' + req.user.access_token);
 });
+app.get('/auth/logout', passport.authenticate("bearer", {session: false, failureRedirect: '/'}), function (req, res) {
+    users.updateOne({"access_token": req.user.access_token}, {$set: {"access_token":0}});
+    res.redirect('/');
+});
 app.put('/api/vote/:pollid/:vote', function (req, res) {
     var voteresult = addVote(Number(req.params.pollid), req.params.vote-1);
     if ("err" in voteresult) {

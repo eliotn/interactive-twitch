@@ -10,17 +10,21 @@
     <link rel="stylesheet" href="css/app.css">
 </head>
 
-<body>
+<body class="background">
 
 
     <div class="grid-container">
         <div class="grid-y" style="height:500px">
             <div class="grid-x grid-padding-x">
-                <div class="large-12 cell">
+                <div class="large-6 cell">
                     <h1 id="polltitle">You may start an activity.</h1>
                 </div>
+                <div class="large-6 cell">
+                    <h3>Hello, user.</h3>
+                    <a href="/auth/logout" class="button login">Logout</a>
+                </div>
             </div>
-            <div class="grid-x grid-padding-x">
+            <div class="grid-x grid-padding-x data-container">
                 <div class="cell hide" id="chartContainer">
                     <canvas id="myChart" width="100" height="100"></canvas>
                 </div>
