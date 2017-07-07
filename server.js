@@ -135,6 +135,7 @@ var channelToID = {};
 
 
     });
+    //only seems to work when joining a channel in the channels list
     client.on("join", function(channel, username, self) {
         if (self) {
             var options = {
@@ -232,7 +233,7 @@ passport.use(
 app.get('/auth/twitch/', passport.authenticate("twitch", {session: false}));
 app.get('/auth/twitch/callback', passport.authenticate("twitch", {session:false, failureRedirect: '/'}), function (req, res) {
 
-    res.redirect('/?access_token=' + req.user.access_token);
+    res.redirect('/activity.html?access_token=' + req.user.access_token);
 });
 app.put('/api/vote/:pollid/:vote', function (req, res) {
     var voteresult = addVote(Number(req.params.pollid), req.params.vote-1);
