@@ -471,30 +471,30 @@ app.get('/js/vendor/:filename', function(req, res) {
 
 //http templating
 var mustache = require('mustache');
-app.get('/activity/:userid', passport.authenticate("bearer", {
-    session: false
-}), function(req, res) {
-    //res.writeHead(200, {'Content-Type':'text/html'});
-    var template = {
-        "user": req.user.username,
-    };
+function getIndex(req, res, next, user) {
+    var template = {};
+    if (user) {
+        template.user = user.username;
+        template.userid = user.userid;
+    }
+    fs.readFile(path.join(__dirname, 'static/index.html'), function response(err, html) {
+            if (err) console.log(err);
+            res.write(mustache.to_html(html.toString('utf-8'), template));
+            res.end();
+    });
+}
+function getActivity(req, res, next, user) {
+    var template = {};
+    if (user) {
+        template.user = user.username;
+    }
     polls.findOne({
         "userid": Number(req.params.userid)
     }, {}, function(err, results) {
         if (err) console.log(err);
         var answers = [];
-        if (req.user.userid == req.params.userid) {
+        if (user && user.userid == req.params.userid) {
             if (results) {
-                /*template["question"] = results.question;
-
-                for (var i = 0; i < results.answers.length; i++) {
-                    answers.push({
-                        "index": i,
-                        "value": results.answers[i]
-                    })
-                }
-                template["answers"] = answers;
-                template["votes"] = results.votes;*/
                 template["graph"] = "graph";
                 template.polltitle = results.question;
             }
@@ -526,11 +526,20 @@ app.get('/activity/:userid', passport.authenticate("bearer", {
             res.end();
         });
     });
+}
 
+app.get('/activity/:userid', function(req, res, next) {
+    passport.authenticate('bearer', {"session":"false"}, function(err, user, info) {
+        if (err) { return next(err); }
+        getActivity(req, res, next, user);
+    })(req, res, next);
 });
 
-app.get('/', function(req, res) {
-    res.sendFile(path.join(__dirname, 'static/index.html'));
+app.get('/', function(req, res, next) {
+    passport.authenticate('bearer', {"session":"false"}, function(err, user, info) {
+        if (err) { return next(err); }
+        getIndex(req, res, next, user);
+    })(req, res, next);
 });
 
 

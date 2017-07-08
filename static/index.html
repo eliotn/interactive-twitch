@@ -12,14 +12,25 @@
     <div class="grid-container">
       <div class="grid-x grid-padding-x">
         <div class="large-12 cell">
+          {{#user}}
+          <h1>Hello, {{.}}.</h1>
+          {{/user}}
+          {{^user}}
           <h1>Welcome to Twitch Interactive</h1>
+          {{/user}}
         </div>
       </div>
     </div>
     <div class="grid-container">
       <div class="grid-x grid-padding-x">
         <div class="large-12 cell">
+          {{#user}}
+          <a onclick="window.location.href='/activity/{{userid}}' + window.location.search" class="button">View my poll</a>
+          {{/user}}
+          {{^user}}
           <a href="/auth/twitch" class="button login">Login To Twitch</a>
+          {{/user}}
+
         </div>
       </div>
     </div>
