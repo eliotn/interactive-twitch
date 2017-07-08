@@ -425,36 +425,38 @@ app.delete('/api/poll', passport.authenticate("bearer", {
     client.part('#' + req.user.username);
     res.status(204).send("Deleted");
 });
-
-app.get('/api/debug/testlogin', passport.authenticate("bearer", {
-    session: false
-}), function(req, res) {
-    res.json({
-        "Note": "Your userid is " + req.user.userid
-    });
-});
-//dump the database output
-app.get('/api/debug/users', passport.authenticate("bearer", {
-    session: false
-}), function(req, res) {
-    users.find().toArray(function(err, result) {
-        if (err) throw err;
+//debug functions don't use in production server
+if (process.env.DEBUG) {
+    app.get('/api/debug/testlogin', passport.authenticate("bearer", {
+        session: false
+    }), function(req, res) {
         res.json({
-            'users': JSON.stringify(result)
+            "Note": "Your userid is " + req.user.userid
         });
     });
-});
-app.get('/api/debug/polls', passport.authenticate("bearer", {
-    session: false
-}), function(req, res) {
-    polls.find().toArray(function(err, result) {
-        if (err) throw err;
-        res.json({
-            'polls': JSON.stringify(result)
+
+    app.get('/api/debug/users', passport.authenticate("bearer", {
+        session: false
+    }), function(req, res) {
+        users.find().toArray(function(err, result) {
+            if (err) throw err;
+            res.json({
+                'users': JSON.stringify(result)
+            });
         });
     });
-});
 
+    app.get('/api/debug/polls', passport.authenticate("bearer", {
+        session: false
+    }), function(req, res) {
+        polls.find().toArray(function(err, result) {
+            if (err) throw err;
+            res.json({
+                'polls': JSON.stringify(result)
+            });
+        });
+    });
+}
 //app.use(express.static(path.join(__dirname, 'static/css')));
 //app.use(express.static(path.join(__dirname, 'static/js')));
 
@@ -471,6 +473,7 @@ app.get('/js/vendor/:filename', function(req, res) {
 
 //http templating
 var mustache = require('mustache');
+
 function getIndex(req, res, next, user) {
     var template = {};
     if (user) {
@@ -478,11 +481,12 @@ function getIndex(req, res, next, user) {
         template.userid = user.userid;
     }
     fs.readFile(path.join(__dirname, 'static/index.html'), function response(err, html) {
-            if (err) console.log(err);
-            res.write(mustache.to_html(html.toString('utf-8'), template));
-            res.end();
+        if (err) console.log(err);
+        res.write(mustache.to_html(html.toString('utf-8'), template));
+        res.end();
     });
 }
+
 function getActivity(req, res, next, user) {
     var template = {};
     if (user) {
@@ -529,15 +533,23 @@ function getActivity(req, res, next, user) {
 }
 
 app.get('/activity/:userid', function(req, res, next) {
-    passport.authenticate('bearer', {"session":"false"}, function(err, user, info) {
-        if (err) { return next(err); }
+    passport.authenticate('bearer', {
+        "session": "false"
+    }, function(err, user, info) {
+        if (err) {
+            return next(err);
+        }
         getActivity(req, res, next, user);
     })(req, res, next);
 });
 
 app.get('/', function(req, res, next) {
-    passport.authenticate('bearer', {"session":"false"}, function(err, user, info) {
-        if (err) { return next(err); }
+    passport.authenticate('bearer', {
+        "session": "false"
+    }, function(err, user, info) {
+        if (err) {
+            return next(err);
+        }
         getIndex(req, res, next, user);
     })(req, res, next);
 });
