@@ -1,11 +1,17 @@
 $(document).foundation()
 
-var answers = 4;
-
 function addAnswer() {
+  var answernum = document.getElementsByClassName('answerselection').length + 1;
   document.getElementById("voteanswers").innerHTML = document.getElementById("voteanswers").innerHTML +
-    
-    '<label>Answer 5</label><input id="answer5" type="text" placeholder="What is an answer" />';
+    '<div class="answerselection"><label>Answer ' + answernum + '</label><input id="answer' + answernum + '" type="text" ' +
+    'placeholder="What is one possible answer?" /></div>';
+}
+
+function removeAnswer() {
+  var answers = document.getElementsByClassName('answerselection');
+  if (answers.length > 2) {
+    answers[answers.length-1].remove();
+  }
 }
 
 function vote() {
@@ -33,11 +39,12 @@ function deletePoll(pollid) {
 
 function submitPoll() {
   var _xhttp = new XMLHttpRequest();
+  var answerelements = document.getElementsByClassName('answerselection');
+  var answers = [];
+  for (var i = 0; i < answerelements.length; i++) {
+    answers.push(answerelements[i].children[1].value);
+  }
   var question = document.getElementById('question').value;
-  var answer1 = document.getElementById('answer1').value;
-  var answer2 = document.getElementById('answer2').value;
-  var answer3 = document.getElementById('answer3').value;
-  var answer4 = document.getElementById('answer4').value;
   _xhttp.onreadystatechange = function(e) {
     if (_xhttp.readyState === 4) {
       if (_xhttp.status === 401) {
@@ -46,7 +53,7 @@ function submitPoll() {
       }
       console.log({
         "question": question,
-        "answers": [answer1, answer2, answer3, answer4]
+        "answers": answers
       });
       location.reload();
     }
@@ -57,7 +64,7 @@ function submitPoll() {
   //make async
   _xhttp.send(JSON.stringify({
     "question": question,
-    "answers": [answer1, answer2, answer3, answer4]
+    "answers": answers
   }));
 }
 
@@ -100,7 +107,6 @@ function getPoll() {
           }, //JSON.parse(xhttp.responseText),
           options: {}
         });
-        polltitle.innerText = response.question;
         var chartclasses = document.getElementById("chartContainer").classList;
         var questionclasses = document.getElementById("settingsContainer").classList;
         if (chartclasses.contains("hide")) {
@@ -119,7 +125,6 @@ function getPoll() {
 }
 
 
-var polltitle = document.getElementById('polltitle');
 if (document.getElementById('myChart')) {
   //crude
   console.log("Sending");

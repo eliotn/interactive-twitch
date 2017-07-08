@@ -17,7 +17,7 @@
 
         <div class="grid-x grid-padding-x">
             <div class="large-6 cell">
-                <h1 id="polltitle">You may start an activity.</h1>
+                <h1 id="polltitle">{{polltitle}}</h1>
             </div>
             <div class="large-6 cell">
                 <h3>Hello, {{user}}.</h3>
@@ -56,24 +56,28 @@
                             <div class="cell" id="voteanswers">
                                 <label>Question</label>
                                 <input id="question" type="text" placeholder="What is your poll question?" />
-                                <label>Answer 1</label>
-                                <input class="large-10 cell" id="answer1" type="text" placeholder="What is one possible answer?" />
+                                <div class="answerselection">
+                                    <label>Answer 1</label>
+                                    <input class="large-10 cell" id="answer1" type="text" placeholder="What is one possible answer?" />
+                                </div>
                                 <!-- <a onClick="removeAnswer()" class="button large-2">-</a> -->
-                                <label>Answer 2</label>
-                                <input id="answer2" type="text" placeholder="What is one possible answer?" />
-                                <label>Answer 3</label>
-                                <input id="answer3" type="text" placeholder="What is one possible answer?" />
-                                <label>Answer 4</label>
-                                <input id="answer4" type="text" placeholder="What is one possible answer?" />
+                                <div class="answerselection">
+                                    <label>Answer 2</label>
+                                    <input id="answer2" type="text" placeholder="What is one possible answer?" />
+                                </div>
                             </div>
                         </div>
                         <div class="grid-x grid-padding-x">
-                            <div class="large-4 cell">
+                            <div class="small-4 cell">
                                 <a onClick="submitPoll()" class="button">Start Your Poll</a>
                             </div>
-                            <div class="large-8 cell">
+                            <div class="small-2 cell">
                                 <a onClick="addAnswer()" class="button">+</a>
                             </div>
+                            <div class="small-2 cell">
+                                <a onClick="removeAnswer()" class="button">-</a>
+                            </div>
+                            <div class="auto cell">&nbsp;</div>
                         </div>
                     </div>
                     <div class="tabs-panel" id="pictionary">

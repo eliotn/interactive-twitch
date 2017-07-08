@@ -194,12 +194,11 @@ client = new tmi.client({
 });
 client.connect();
 client.on("chat", function(channel, userstate, message, self) {
-    console.log("Chat message from " + channel);
-    for (var i = 0; i < message.length; i++) {
-        if (message.charCodeAt(i) >= 49 && message.charCodeAt(i) <= 57) {
-            addVote(channelToID[channel], message.charCodeAt(i) - 49, userstate["user-id"]);
-            return;
-        }
+    console.log(message);
+    var number = /[1-9][0-9]*/;
+    var match = number.exec(message);
+    if (match) {
+        addVote(channelToID[channel], Number(match)-1, userstate["user-id"]);
     }
 
 
@@ -487,6 +486,10 @@ app.get('/activity/:userid', passport.authenticate("bearer", {
                 template["answers"] = answers;
                 template["votes"] = results.votes;*/
                 template["graph"] = "graph";
+                template.polltitle = results.question;
+            }
+            else {
+                template.polltitle = "Your poll is ready to begin";
             }
             template.polltypes = ["voting"]
         }
@@ -504,6 +507,7 @@ app.get('/activity/:userid', passport.authenticate("bearer", {
                 })
             }
             template.answers = answers;
+            template.polltitle = "Viewing someone else's poll";
 
         }
         fs.readFile(path.join(__dirname, 'static/activity.html'), function response(err, html) {
