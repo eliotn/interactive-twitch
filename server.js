@@ -28,19 +28,39 @@ app.use(bodyParser.json());
 //access_token, userid, tokenUpdateTime
 //polls contains the following
 //userid, question, [answer], [votes]
-var users;//get the collection
-var polls;//get the polls
+var users; //get the collection
+var polls; //get the polls
 MongoClient.connect(MONGO_URL, function(err, database) {
     if (err) throw err;
     users = database.collection('users');
     polls = database.collection('polls');
-    if (DROP_DATA) {//utility function to retest with new data
+    if (DROP_DATA) { //utility function to retest with new data
         users.drop();
         polls.drop();
         //tokens have a lifetime of 2400 seconds (60 minutes)
-        users.createIndex({"tokenUpdateTime" : 1}, {"expireAfterSeconds" : 2400});
+        users.createIndex({
+            "tokenUpdateTime": 1
+        }, {
+            "expireAfterSeconds": 2400
+        });
     }
 });
+
+function deletePoll(pollid) {
+    var returnval = {};
+    polls.findOneAndDelete({
+        "userid": Number(pollid)
+    }, function (err, res) {
+        if (err) returnval = {"err":err};
+        else {
+            if (res) {
+                returnval = {};
+            } 
+            returnval = {"err": "resource not found"};
+        }
+    });
+    return returnval;
+}
 
 
 //adds vote, requires number pollid and vote option
@@ -49,24 +69,49 @@ function addVote(pollid, vote, user) {
     console.log(pollid);
     console.log(vote);
     var result_json = {};
-    polls.findOne({"userid": Number(pollid)}, {}, function(err, results) {
+    polls.findOne({
+        "userid": Number(pollid)
+    }, {}, function(err, results) {
         if (err) {
-            result_json = {"err":err};
+            result_json = {
+                "err": err
+            };
             return;
         }
 
-        if (!results || vote < 0 || results.answers.length < vote ) {
-            result_json = {"err": "Poll not found"};
+        if (!results || vote < 0 || results.answers.length-1 < vote) {
+            result_json = {
+                "err": "Poll not found"
+            };
             return;
         }
-        polls.updateOne({"userid": Number(pollid)},
-        {$inc: {["votes." + String(vote)]:1}}, function(err, results) {
-                if (err) {result_json = {"err": err};}
-                else {result_json = {"Note:": "vote counted"}};
+        polls.updateOne({
+            "userid": Number(pollid)
+        }, {
+            $inc: {
+                ["votes." + String(vote)]: 1
+            }
+        }, function(err, results) {
+            if (err) {
+                result_json = {
+                    "err": err
+                };
+            }
+            else {
+                result_json = {
+                    "Note:": "vote counted"
+                }
+            };
         });
         console.log(user);
         if (user) {
-            polls.updateOne({"userid": Number(pollid)}, {$push: {"usersvoted":user}});
+            polls.updateOne({
+                "userid": Number(pollid)
+            }, {
+                $push: {
+                    "usersvoted": user
+                }
+            });
         }
 
     });
@@ -76,9 +121,13 @@ function addVote(pollid, vote, user) {
 //creates a poll
 function createPoll(pollid, question, answerlist) {
     var result_json = {};
-    polls.findOne({"userid": Number(pollid)}, {}, function(err, results) {
+    polls.findOne({
+        "userid": Number(pollid)
+    }, {}, function(err, results) {
         if (err) {
-            result_json = {"err":err};
+            result_json = {
+                "err": err
+            };
             return result_json;
         }
         //properly format answers
@@ -90,15 +139,35 @@ function createPoll(pollid, question, answerlist) {
 
         if (!results) {
             console.log("poll needs to be created");
-            polls.insert({"usersvoted":[], "userid": Number(pollid), "question": question, "answers":answers, "votes":votes}, function (err) {
-                if (err) result_json = {"err":err};
-                else result_json = {"Note":"Poll added"};
+            polls.insert({
+                "usersvoted": [],
+                "userid": Number(pollid),
+                "question": question,
+                "answers": answers,
+                "votes": votes
+            }, function(err) {
+                if (err) result_json = {
+                    "err": err
+                };
+                else result_json = {
+                    "Note": "Poll added"
+                };
             });
         }
         else {
             console.log("update poll with new information");
-            polls.updateOne({"userid": Number(pollid)}, {$set: {"question":question, "answers":answers, "votes":votes}});
-            result_json = {"Note":"Poll updated"};
+            polls.updateOne({
+                "userid": Number(pollid)
+            }, {
+                $set: {
+                    "question": question,
+                    "answers": answers,
+                    "votes": votes
+                }
+            });
+            result_json = {
+                "Note": "Poll updated"
+            };
         }
     });
     return result_json;
@@ -110,43 +179,43 @@ var request = require('request');
 var client;
 const fs = require('fs');
 var channelToID = {};
-    client = new tmi.client({
-        identity: {
-            username: "ejg_dnd",
-            password: OAUTH_SECRET
-        },
-	options: {
-    		debug: true,
-  	},
-  	connection: {
-    		reconnect: true,
-  	},
-        channels: ['#hardlydifficult']
-    });
-    client.connect();
-    client.on("chat", function(channel, userstate, message, self) {
-        console.log("Chat message from " + channel);
-        for (var i = 0; i < message.length; i++) {
-            if (message.charCodeAt(i) >= 49 && message.charCodeAt(i) <= 57) {
-                addVote(channelToID[channel], message.charCodeAt(i) - 49, userstate["user-id"]);
-                return;
-            }
+client = new tmi.client({
+    identity: {
+        username: "ejg_dnd",
+        password: OAUTH_SECRET
+    },
+    options: {
+        debug: true,
+    },
+    connection: {
+        reconnect: true,
+    },
+    channels: ['#hardlydifficult']
+});
+client.connect();
+client.on("chat", function(channel, userstate, message, self) {
+    console.log("Chat message from " + channel);
+    for (var i = 0; i < message.length; i++) {
+        if (message.charCodeAt(i) >= 49 && message.charCodeAt(i) <= 57) {
+            addVote(channelToID[channel], message.charCodeAt(i) - 49, userstate["user-id"]);
+            return;
         }
+    }
 
 
-    });
-    //only seems to work when joining a channel in the channels list
-    client.on("join", function(channel, username, self) {
-        if (self) {
-            var options = {
-                url: "https://api.twitch.tv/kraken/users?login=" + channel.substring(1, channel.length),
-                headers: {
-                    'Client-ID': TWITCH_CLIENT_ID,
-                    'Accept': "application/vnd.twitchtv.v5+json"
-                }
-            };
-            request(options,
-            function (err, request, body) {
+});
+//only seems to work when joining a channel in the channels list
+client.on("join", function(channel, username, self) {
+    if (self) {
+        var options = {
+            url: "https://api.twitch.tv/kraken/users?login=" + channel.substring(1, channel.length),
+            headers: {
+                'Client-ID': TWITCH_CLIENT_ID,
+                'Accept': "application/vnd.twitchtv.v5+json"
+            }
+        };
+        request(options,
+            function(err, request, body) {
                 if (err) {
                     throw err;
                 }
@@ -159,8 +228,8 @@ var channelToID = {};
                 createPoll(channelToID[channel], "What is 1+1?", a);
                 console.log(channelToID);
             });
-        }
-    });
+    }
+});
 
 
 
@@ -180,26 +249,47 @@ passport.use(new twitchStrategy({
     session: false
 }, function(accessToken, refreshToken, profile, done) {
     //do stuff with the user after you log them in
-    users.findOne({"userid": profile.id}, function(err, results) {
+    users.findOne({
+        "userid": profile.id
+    }, function(err, results) {
         if (err) {
             return done(err);
         }
         if (!results) {
             console.log("user needs to be created");
             console.log(profile);
-            users.insert({"userid": profile.id, "username":profile.displayName, "access_token":accessToken, "tokenUpdateTime":new Date()}, function (err) {
+            users.insert({
+                "userid": profile.id,
+                "username": profile.displayName,
+                "access_token": accessToken,
+                "tokenUpdateTime": new Date()
+            }, function(err) {
                 if (err) return done(err);
-                return done(null, {"access_token":accessToken});
+                return done(null, {
+                    "userid": profile.id,
+                    "access_token": accessToken
+                });
             });
         }
         else {
             console.log("user already logged in!");
-            users.updateOne({"userid": profile.id}, {$set: {"username":profile.displayName, "access_token":accessToken, "tokenUpdateTime":new Date()}});
-            return done(null, {"access_token":accessToken});
+            users.updateOne({
+                "userid": profile.id
+            }, {
+                $set: {
+                    "username": profile.displayName,
+                    "access_token": accessToken,
+                    "tokenUpdateTime": new Date()
+                }
+            });
+            return done(null, {
+                "userid": profile.id,
+                "access_token": accessToken
+            });
         }
     });
     console.log(JSON.stringify(profile));
-     //put data we want access to in the callback here
+    //put data we want access to in the callback here
 
 }));
 
@@ -207,22 +297,30 @@ passport.use(new twitchStrategy({
 //authenticate based on token
 passport.use(
     new BearerStrategy(
-        function (token, done) {
+        function(token, done) {
             if (!token) {
                 console.log("token not found");
-                return done(null, false, {message: 'no token'});
+                return done(null, false, {
+                    message: 'no token'
+                });
             }
-            users.findOne({"access_token": token}, function(err, result) {
+            users.findOne({
+                "access_token": token
+            }, function(err, result) {
                 if (err) {
                     console.log("error in bearerstrategy" + err);
                     return done(err);
                 }
                 if (!result) {
                     console.log("incorrect token");
-                    return done(null, false, {message: 'incorrect token'});
+                    return done(null, false, {
+                        message: 'incorrect token'
+                    });
                 }
                 console.log("correct token");
-                return done(null, result, {scope:'all'});
+                return done(null, result, {
+                    scope: 'all'
+                });
             });
         }
     )
@@ -230,39 +328,67 @@ passport.use(
 
 //session is set to false because we aren't using sessions
 //thanks https://jeroenpelgrims.com/token-based-sessionless-auth-using-express-and-passport
-app.get('/auth/twitch/', passport.authenticate("twitch", {session: false}));
-app.get('/auth/twitch/callback', passport.authenticate("twitch", {session:false, failureRedirect: '/'}), function (req, res) {
+app.get('/auth/twitch/', passport.authenticate("twitch", {
+    session: false
+}));
+app.get('/auth/twitch/callback', passport.authenticate("twitch", {
+    session: false,
+    failureRedirect: '/'
+}), function(req, res) {
 
-    res.redirect('/activity?access_token=' + req.user.access_token);
+    res.redirect('/activity/' + req.user.userid + '?access_token=' + req.user.access_token);
 });
-app.get('/auth/logout', passport.authenticate("bearer", {session: false, failureRedirect: '/'}), function (req, res) {
-    users.updateOne({"access_token": req.user.access_token}, {$set: {"access_token":0}});
+app.get('/auth/logout', passport.authenticate("bearer", {
+    session: false,
+    failureRedirect: '/'
+}), function(req, res) {
+    users.updateOne({
+        "access_token": req.user.access_token
+    }, {
+        $set: {
+            "access_token": 0
+        }
+    });
     res.redirect('/');
 });
-app.put('/api/vote/:pollid/:vote', function (req, res) {
-    var voteresult = addVote(Number(req.params.pollid), req.params.vote-1);
+app.put('/api/vote/:pollid/:vote', function(req, res) {
+    var voteresult = addVote(Number(req.params.pollid), req.params.vote - 1);
     if ("err" in voteresult) {
         res.status(404).send();
         return;
     }
     res.json(voteresult)
 });
-app.get('/api/poll', passport.authenticate("bearer", {session: false}), function (req, res) {
-   polls.findOne({"userid": req.user.userid}, {}, function(err, results) {
+app.get('/api/poll', passport.authenticate("bearer", {
+    session: false
+}), function(req, res) {
+    polls.findOne({
+        "userid": req.user.userid
+    }, {}, function(err, results) {
         if (err) {
-            res.json({"err":err});
+            res.json({
+                "err": err
+            });
             return;
         }
         if (!results) {
-            res.json({"err":"This user does not have a poll."});
+            res.json({
+                "err": "This user does not have a poll."
+            });
             return;
         }
-        var object = {"question":results.question, "answers":results.answers, "votes":results.votes};
+        var object = {
+            "question": results.question,
+            "answers": results.answers,
+            "votes": results.votes
+        };
         res.json(object);
         return;
     });
 });
-app.post('/api/poll', passport.authenticate("bearer", {session: false}), function (req, res) {
+app.post('/api/poll', passport.authenticate("bearer", {
+    session: false
+}), function(req, res) {
     console.log(req.body);
     if (req.body.question && req.body.answers) {
         client.join("#" + req.user.username);
@@ -273,23 +399,50 @@ app.post('/api/poll', passport.authenticate("bearer", {session: false}), functio
     }
 
     else {
-        res.json({"Note":"You posted an invalid poll"});
+        res.json({
+            "Note": "You posted an invalid poll"
+        });
     }
 });
-app.get('/api/debug/testlogin',  passport.authenticate("bearer", {session: false}), function (req, res) {
-    res.json({"Note":"Your userid is " + req.user.userid});
+
+app.delete('/api/poll',  passport.authenticate("bearer", {
+    session: false
+}), function(req, res) { 
+    var delete_status = deletePoll(req.user.userid);
+    if ("err" in delete_status) {
+        res.status(204).send(delete_status.err);
+    }
+    client.say("#" + req.user.username, "The poll is over!");
+    client.part('#' + req.user.username);
+    res.status(204).send("Deleted");
 });
-//dump the database output
-app.get('/api/debug/users',  passport.authenticate("bearer", {session: false}), function (req, res) {
-    users.find().toArray(function(err, result) {
-        if (err) throw err;
-        res.json({'users':JSON.stringify(result)});
+
+app.get('/api/debug/testlogin', passport.authenticate("bearer", {
+    session: false
+}), function(req, res) {
+    res.json({
+        "Note": "Your userid is " + req.user.userid
     });
 });
-app.get('/api/debug/polls',  passport.authenticate("bearer", {session: false}), function (req, res) {
+//dump the database output
+app.get('/api/debug/users', passport.authenticate("bearer", {
+    session: false
+}), function(req, res) {
+    users.find().toArray(function(err, result) {
+        if (err) throw err;
+        res.json({
+            'users': JSON.stringify(result)
+        });
+    });
+});
+app.get('/api/debug/polls', passport.authenticate("bearer", {
+    session: false
+}), function(req, res) {
     polls.find().toArray(function(err, result) {
         if (err) throw err;
-        res.json({'polls':JSON.stringify(result)});
+        res.json({
+            'polls': JSON.stringify(result)
+        });
     });
 });
 
@@ -297,22 +450,72 @@ app.get('/api/debug/polls',  passport.authenticate("bearer", {session: false}), 
 //app.use(express.static(path.join(__dirname, 'static/js')));
 
 //keep css/js files publicly accessible
-app.get('/css/:filename', function (req, res) {
+app.get('/css/:filename', function(req, res) {
     res.sendFile(path.join(__dirname, 'static/css/' + req.params.filename));
 });
-app.get('/js/:filename', function (req, res) {
+app.get('/js/:filename', function(req, res) {
     res.sendFile(path.join(__dirname, 'static/js/' + req.params.filename));
 });
-app.get('/js/vendor/:filename', function (req, res) {
+app.get('/js/vendor/:filename', function(req, res) {
     res.sendFile(path.join(__dirname, 'static/js/vendor/' + req.params.filename));
 });
 
-app.get('/activity', function (req, res) {
-    
-    res.sendFile(path.join(__dirname, 'static/activity.html'));
+//http templating
+var mustache = require('mustache');
+app.get('/activity/:userid', passport.authenticate("bearer", {
+    session: false
+}), function(req, res) {
+    //res.writeHead(200, {'Content-Type':'text/html'});
+    var template = {
+        "user": req.user.username,
+    };
+    polls.findOne({
+        "userid": Number(req.params.userid)
+    }, {}, function(err, results) {
+        if (err) console.log(err);
+        var answers = [];
+        if (req.user.userid == req.params.userid) {
+            if (results) {
+                /*template["question"] = results.question;
+
+                for (var i = 0; i < results.answers.length; i++) {
+                    answers.push({
+                        "index": i,
+                        "value": results.answers[i]
+                    })
+                }
+                template["answers"] = answers;
+                template["votes"] = results.votes;*/
+                template["graph"] = "graph";
+            }
+            template.polltypes = ["voting"]
+        }
+        else if (results == null) {
+            res.status(404).send("Poll not found");
+            return;
+        }
+        else {
+            template.question = results.question;
+
+            for (var i = 0; i < results.answers.length; i++) {
+                answers.push({
+                    "index": i+1,
+                    "value": results.answers[i]
+                })
+            }
+            template.answers = answers;
+
+        }
+        fs.readFile(path.join(__dirname, 'static/activity.html'), function response(err, html) {
+            if (err) console.log(err);
+            res.write(mustache.to_html(html.toString('utf-8'), template));
+            res.end();
+        });
+    });
+
 });
 
-app.get('/', function (req, res) {
+app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, 'static/index.html'));
 });
 

@@ -1,10 +1,34 @@
 $(document).foundation()
 
+var answers = 4;
+
 function addAnswer() {
-  document.getElementById("vote").innerHTML = document.getElementById("vote").innerHTML +
-    '<div class="grid-x grid-padding-x"><div class="large-12 cell">' +
-    '<label>Answer 5</label><input id="answer5" type="text" placeholder="What is an answer" />' +
-    '</div></div>';
+  document.getElementById("voteanswers").innerHTML = document.getElementById("voteanswers").innerHTML +
+    
+    '<label>Answer 5</label><input id="answer5" type="text" placeholder="What is an answer" />';
+}
+
+function vote() {
+  var _xhttp = new XMLHttpRequest();
+  var userid = window.location.pathname.split("/")[2];
+  var selection = document.getElementById("voteselection");
+  _xhttp.open("PUT", "/api/vote/" + userid + "/" + selection.options[selection.selectedIndex].value);
+  _xhttp.setRequestHeader('Content-Type', 'application/json');
+  _xhttp.send();
+}
+
+function deletePoll(pollid) {
+  var _xhttp = new XMLHttpRequest();
+  _xhttp.onreadystatechange = function(e) {
+    console.log(_xhttp.readyState);
+    console.log(_xhttp.status);
+    if (_xhttp.readyState === 4 && _xhttp.status == 204) {
+      location.reload();
+    }
+  }
+  _xhttp.open("DELETE", "/api/poll/" + location.search);
+  _xhttp.setRequestHeader('Content-Type', 'application/json');
+  _xhttp.send();
 }
 
 function submitPoll() {
@@ -14,7 +38,20 @@ function submitPoll() {
   var answer2 = document.getElementById('answer2').value;
   var answer3 = document.getElementById('answer3').value;
   var answer4 = document.getElementById('answer4').value;
-  _xhttp.open("POST", "/api/poll" + location.search, false);
+  _xhttp.onreadystatechange = function(e) {
+    if (_xhttp.readyState === 4) {
+      if (_xhttp.status === 401) {
+        unauthorized();
+        return;
+      }
+      console.log({
+        "question": question,
+        "answers": [answer1, answer2, answer3, answer4]
+      });
+      location.reload();
+    }
+  }
+  _xhttp.open("POST", "/api/poll" + location.search);
   _xhttp.setRequestHeader('Content-Type', 'application/json');
   console.log(question);
   //make async
@@ -22,15 +59,6 @@ function submitPoll() {
     "question": question,
     "answers": [answer1, answer2, answer3, answer4]
   }));
-  if (_xhttp.status === 401) {
-      unauthorized();
-      return;
-  }
-  console.log({
-    "question": question,
-    "answers": [answer1, answer2, answer3, answer4]
-  });
-  getPoll();
 }
 
 function unauthorized() {
@@ -40,7 +68,7 @@ function unauthorized() {
 function getPoll() {
   var _xhttp = new XMLHttpRequest();
   document.getElementById('question').classList;
-  _xhttp.open("GET", "/api/poll" + location.search, false);
+  
   //make async
   _xhttp.onreadystatechange = function(e) {
     if ( _xhttp.status === 401) {
@@ -48,6 +76,7 @@ function getPoll() {
       return;
     }
     if (_xhttp.readyState === 4 && _xhttp.status === 200) {
+      var ctx = document.getElementById('myChart').getContext('2d');
       var poll_labels = [];
       var poll_data = [];
       var bar_colors = [];
@@ -85,13 +114,13 @@ function getPoll() {
       
     }
   }
+  _xhttp.open("GET", "/api/poll" + location.search);
   _xhttp.send();
 }
 
-var ctx = document.getElementById('myChart').getContext('2d');
+
 var polltitle = document.getElementById('polltitle');
-console.log(location.search);
-if (location.search) {
+if (document.getElementById('myChart')) {
   //crude
   console.log("Sending");
   getPoll();
