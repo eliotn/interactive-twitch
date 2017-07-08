@@ -3,7 +3,7 @@
 
 const SERVER = process.env.SERVER_URL || "https://test-eliotn.c9users.io";
 const PORT = process.env.PORT || 3000;
-const DROP_DATA = true;
+const DROP_DATA = false;
 const MONGO_URL = process.env.MONGO_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/twitchvotes';
 const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const OAUTH_SECRET = process.env.OAUTH_SECRET;
@@ -50,13 +50,17 @@ function deletePoll(pollid) {
     var returnval = {};
     polls.findOneAndDelete({
         "userid": Number(pollid)
-    }, function (err, res) {
-        if (err) returnval = {"err":err};
+    }, function(err, res) {
+        if (err) returnval = {
+            "err": err
+        };
         else {
             if (res) {
                 returnval = {};
-            } 
-            returnval = {"err": "resource not found"};
+            }
+            returnval = {
+                "err": "resource not found"
+            };
         }
     });
     return returnval;
@@ -79,9 +83,15 @@ function addVote(pollid, vote, user) {
             return;
         }
 
-        if (!results || vote < 0 || results.answers.length-1 < vote) {
+        if (!results || vote < 0 || results.answers.length - 1 < vote) {
             result_json = {
                 "err": "Poll not found"
+            };
+            return;
+        }
+        if (results.usersvoted.indexOf(Number(user)) != -1) {
+            result_json = {
+                "err": "You already voted"
             };
             return;
         }
@@ -102,17 +112,17 @@ function addVote(pollid, vote, user) {
                     "Note:": "vote counted"
                 }
             };
+            if (user && !("err" in result_json)) {
+                polls.updateOne({
+                    "userid": Number(pollid)
+                }, {
+                    $push: {
+                        "usersvoted": Number(user)
+                    }
+                });
+            }
         });
-        console.log(user);
-        if (user) {
-            polls.updateOne({
-                "userid": Number(pollid)
-            }, {
-                $push: {
-                    "usersvoted": user
-                }
-            });
-        }
+
 
     });
     return result_json;
@@ -198,7 +208,7 @@ client.on("chat", function(channel, userstate, message, self) {
     var number = /[1-9][0-9]*/;
     var match = number.exec(message);
     if (match) {
-        addVote(channelToID[channel], Number(match)-1, userstate["user-id"]);
+        addVote(channelToID[channel], Number(match) - 1, userstate["user-id"]);
     }
 
 
@@ -404,9 +414,9 @@ app.post('/api/poll', passport.authenticate("bearer", {
     }
 });
 
-app.delete('/api/poll',  passport.authenticate("bearer", {
+app.delete('/api/poll', passport.authenticate("bearer", {
     session: false
-}), function(req, res) { 
+}), function(req, res) {
     var delete_status = deletePoll(req.user.userid);
     if ("err" in delete_status) {
         res.status(204).send(delete_status.err);
@@ -502,7 +512,7 @@ app.get('/activity/:userid', passport.authenticate("bearer", {
 
             for (var i = 0; i < results.answers.length; i++) {
                 answers.push({
-                    "index": i+1,
+                    "index": i + 1,
                     "value": results.answers[i]
                 })
             }

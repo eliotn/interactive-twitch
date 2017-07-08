@@ -87,12 +87,18 @@ function getPoll() {
       var poll_labels = [];
       var poll_data = [];
       var bar_colors = [];
+      var all_data = [];
       var response = JSON.parse(_xhttp.responseText);
       if ("answers" in response) {
         for (var i = 0; i < response.answers.length; i++) {
-          poll_labels.push(response.answers[i]);
-          poll_data.push(response.votes[i]);
-          bar_colors.push(["red", "orange", "blue", "yellow", "green"][i % 5]);
+          all_data.push({"label":response.answers[i], "data":response.votes[i],
+          "color":["red", "orange", "yellow", "blue", "green", "magenta"][i % 6]});
+        }
+        all_data.sort(function(a, b) {return b.data - a.data});
+        for (var i = 0; i < response.answers.length; i++) {
+          poll_labels.push(all_data[i].label);
+          poll_data.push(all_data[i].data);
+          bar_colors.push(all_data[i].color);
         }
         var myDoughnutChart = new Chart(ctx, {
           type: 'doughnut',

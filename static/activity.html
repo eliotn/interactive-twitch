@@ -48,7 +48,9 @@
             <div class="auto cell" id="settingsContainer">
                 <ul class="tabs" data-tabs id="twitch-tabs">
                     <li class="tabs-title is-active"><a href="#vote" aria-selected="true">Poll</a></li>
+                    {{#hidethis}}
                     <li class="tabs-title"><a href="#pictionary">Pictionary</a></li>
+                    {{/hidethis}}
                 </ul>
                 <div class="tabs-content" data-tabs-content="twitch-tabs">
                     <div class="tabs-panel is-active grid-container" id="vote">
@@ -80,6 +82,7 @@
                             <div class="auto cell">&nbsp;</div>
                         </div>
                     </div>
+                    {{#hidethis}}
                     <div class="tabs-panel" id="pictionary">
                         <div class="grid-x grid-padding-x">
                             <div class="large-12 cell">
@@ -88,6 +91,7 @@
                             </div>
                         </div>
                     </div>
+                    {{/hidethis}}
                 </div>
             </div>
             {{/polltypes}}
