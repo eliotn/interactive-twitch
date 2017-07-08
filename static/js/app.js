@@ -44,7 +44,6 @@ function getPoll() {
   //make async
   _xhttp.onreadystatechange = function(e) {
     if ( _xhttp.status === 401) {
-      console.log()
       unauthorized();
       return;
     }

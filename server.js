@@ -321,5 +321,7 @@ app.listen(PORT, function() {
     console.log("listening on port " + PORT);
 });
 
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
 //socket.io -- TODO: Implement for live updates
-var io = require('socket.io').listen(app.server);
+//var io = require('socket.io').listen(app.server);
