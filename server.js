@@ -200,7 +200,7 @@ client = new tmi.client({
     connection: {
         reconnect: true,
     },
-    channels: ['#hardlydifficult']
+    channels: []
 });
 client.connect();
 client.on("chat", function(channel, userstate, message, self) {
