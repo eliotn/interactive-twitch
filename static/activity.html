@@ -16,10 +16,11 @@
     <div class="grid-container">
 
         <div class="grid-x grid-padding-x">
-            <div class="large-6 cell">
-                <h1 id="polltitle">{{polltitle}}</h1>
+            <div class="medium-6 cell">
+                <h1>My Activity - <a onclick="getHome()">Home</a></h1>
+                
             </div>
-            <div class="large-6 cell">
+            <div class="medium-6 cell">
                 {{#user}}
                 <h3>Hello, {{user}}.</h3>
                 <a href="/auth/logout" class="button login">Logout</a>
@@ -29,6 +30,17 @@
                 {{/user}}
             </div>
             
+            <div class="large-12 cell">
+                {{#polltitle}}
+                <h3 id="polltitle">{{polltitle}}</h3>
+                {{/polltitle}}
+                {{^polltitle}}
+                <h5 id="polltitle">Make a poll, and people will be able to vote on it through twitch chat and this website.</h5>
+                {{/polltitle}}
+            </div>
+            
+            
+                
         </div>
         <div class="grid-x grid-padding-x data-container">
             {{#graph}}

@@ -9,7 +9,6 @@ const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const OAUTH_SECRET = process.env.OAUTH_SECRET;
 const TWITCH_SECRET = process.env.TWITCH_SECRET;
 
-
 //express
 const express = require('express');
 const app = express();
@@ -426,7 +425,7 @@ app.delete('/api/poll', passport.authenticate("bearer", {
     res.status(204).send("Deleted");
 });
 //debug functions don't use in production server
-if (process.env.DEBUG) {
+if (process.env.DEBUG_MODE) {
     app.get('/api/debug/testlogin', passport.authenticate("bearer", {
         session: false
     }), function(req, res) {
@@ -480,10 +479,23 @@ function getIndex(req, res, next, user) {
         template.user = user.username;
         template.userid = user.userid;
     }
-    fs.readFile(path.join(__dirname, 'static/index.html'), function response(err, html) {
-        if (err) console.log(err);
-        res.write(mustache.to_html(html.toString('utf-8'), template));
-        res.end();
+    polls.find().toArray(function(err, result) {
+        if (err) {
+            console.log(err);
+            res.status(404).send("Could not load polls.");
+            return;
+        }
+        if (result) {
+            template.polls = [];
+            for (var i = 0; i < result.length; i++) {
+                template.polls.push(result[i].userid);
+            }
+        }
+        fs.readFile(path.join(__dirname, 'static/index.html'), function response(err, html) {
+            if (err) console.log(err);
+            res.write(mustache.to_html(html.toString('utf-8'), template));
+            res.end();
+        });
     });
 }
 
@@ -501,9 +513,6 @@ function getActivity(req, res, next, user) {
             if (results) {
                 template["graph"] = "graph";
                 template.polltitle = results.question;
-            }
-            else {
-                template.polltitle = "Your poll is ready to begin";
             }
             template.polltypes = ["voting"]
         }

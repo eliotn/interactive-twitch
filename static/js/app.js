@@ -1,5 +1,12 @@
 $(document).foundation()
 
+function getHome() {
+   window.location.href='/' + window.location.search;
+}
+function getActivity(userid) {
+  window.location.href='/activity/' + userid + window.location.search;
+}
+
 function addAnswer() {
   var answernum = document.getElementsByClassName('answerselection').length + 1;
   document.getElementById("voteanswers").innerHTML = document.getElementById("voteanswers").innerHTML +

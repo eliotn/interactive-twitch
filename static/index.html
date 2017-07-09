@@ -1,43 +1,52 @@
 <!doctype html>
 <html class="no-js" lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Twitch</title>
-    <link rel="stylesheet" href="css/foundation.css">
-    <link rel="stylesheet" href="css/app.css">
-  </head>
-  <body>
-    <div class="grid-container">
-      <div class="grid-x grid-padding-x">
-        <div class="large-12 cell">
-          {{#user}}
-          <h1>Hello, {{.}}.</h1>
-          {{/user}}
-          {{^user}}
-          <h1>Welcome to Twitch Interactive</h1>
-          {{/user}}
-        </div>
-      </div>
-    </div>
-    <div class="grid-container">
-      <div class="grid-x grid-padding-x">
-        <div class="large-12 cell">
-          {{#user}}
-          <a onclick="window.location.href='/activity/{{userid}}' + window.location.search" class="button">View my poll</a>
-          {{/user}}
-          {{^user}}
-          <a href="/auth/twitch" class="button login">Login To Twitch</a>
-          {{/user}}
 
-        </div>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Twitch</title>
+  <link rel="stylesheet" href="css/foundation.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+
+<body>
+  <div class="grid-container">
+    <div class="grid-x grid-padding-x">
+      <div class="large-12 cell">
+        {{#user}}
+        <h1>Hello, {{.}}.</h1>
+        {{/user}} {{^user}}
+        <h1>Welcome to Twitch Interactive</h1>
+        {{/user}}
+        <h5 id="polltitle">An instant twitch bot.  You can make a poll, and people will be able to vote on it through twitch chat and this website.</h5>
       </div>
     </div>
-    <script src="js/vendor/jquery.js"></script>
-    <script src="js/vendor/what-input.js"></script>
-    <script src="js/vendor/foundation.js"></script>
-    <script src="js/app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js"></script>
-  </body>
+  </div>
+  <div class="grid-container">
+    <div class="grid-x grid-padding-x">
+      <div class="large-12 cell">
+        {{#user}}
+        <a onclick="getActivity({{userid}})" class="button">View my poll</a> {{/user}} {{^user}}
+        <a href="/auth/twitch" class="button login">Login To Twitch</a> {{/user}}
+
+      </div>
+    </div>
+  </div>
+  <div class="grid-container">
+    <div class="grid-x grid-padding-x">
+      {{#polls}}
+      <div class="medium-3 cell">
+        <h3><a onclick="getActivity({{.}});">{{.}}</a></h3>
+      </div>
+      {{/polls}}
+    </div>
+  </div>
+  <script src="js/vendor/jquery.js"></script>
+  <script src="js/vendor/what-input.js"></script>
+  <script src="js/vendor/foundation.js"></script>
+  <script src="js/app.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js"></script>
+</body>
+
 </html>
