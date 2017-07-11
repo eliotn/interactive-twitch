@@ -23,7 +23,7 @@
             <div class="medium-6 cell">
                 {{#user}}
                 <h3>Hello, {{user}}.</h3>
-                <a href="/auth/logout" class="button login">Logout</a>
+                <a onclick="logout()" class="button login">Logout</a>
                 {{/user}}
                 {{^user}}
                 <a href="/auth/twitch" class="button login">Login To Twitch</a>

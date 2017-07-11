@@ -1,5 +1,9 @@
 $(document).foundation()
 
+function logout() {
+   window.location.href='/auth/logout' + window.location.search;
+}
+
 function getHome() {
    window.location.href='/' + window.location.search;
 }

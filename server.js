@@ -3,7 +3,7 @@
 
 const SERVER = process.env.SERVER_URL || "https://test-eliotn.c9users.io";
 const PORT = process.env.PORT || 3000;
-const DROP_DATA = false;
+const DROP_DATA = true;
 const MONGO_URL = process.env.MONGO_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/twitchvotes';
 const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const OAUTH_SECRET = process.env.OAUTH_SECRET;
@@ -29,15 +29,18 @@ app.use(bodyParser.json());
 //userid, question, [answer], [votes]
 var users; //get the collection
 var polls; //get the polls
+var tokens;
 MongoClient.connect(MONGO_URL, function(err, database) {
     if (err) throw err;
     users = database.collection('users');
     polls = database.collection('polls');
+    tokens = database.collection('tokens');
     if (DROP_DATA) { //utility function to retest with new data
         users.drop();
         polls.drop();
+        tokens.drop();
         //tokens have a lifetime of 2400 seconds (60 minutes)
-        users.createIndex({
+        tokens.createIndex({
             "tokenUpdateTime": 1
         }, {
             "expireAfterSeconds": 2400
@@ -257,46 +260,36 @@ passport.use(new twitchStrategy({
     session: false
 }, function(accessToken, refreshToken, profile, done) {
     //do stuff with the user after you log them in
-    users.findOne({
-        "userid": profile.id
-    }, function(err, results) {
-        if (err) {
-            return done(err);
-        }
-        if (!results) {
-            console.log("user needs to be created");
+    
             console.log(profile);
-            users.insert({
-                "userid": profile.id,
-                "username": profile.displayName,
-                "access_token": accessToken,
-                "tokenUpdateTime": new Date()
-            }, function(err) {
-                if (err) return done(err);
-                return done(null, {
-                    "userid": profile.id,
-                    "access_token": accessToken
-                });
-            });
-        }
-        else {
-            console.log("user already logged in!");
-            users.updateOne({
+            tokens.update({
                 "userid": profile.id
-            }, {
+            },
+            {
                 $set: {
                     "username": profile.displayName,
                     "access_token": accessToken,
                     "tokenUpdateTime": new Date()
                 }
+            },
+            {
+                upsert:true
             });
-            return done(null, {
-                "userid": profile.id,
-                "access_token": accessToken
+            users.update({
+                "userid": profile.id
+            },
+            {
+                $set: {
+                    "username": profile.displayName
+                }
+            },
+            {
+                upsert:true
             });
-        }
-    });
-    console.log(JSON.stringify(profile));
+        return done(null, {
+            "userid": profile.id,
+            "access_token": accessToken
+        });
     //put data we want access to in the callback here
 
 }));
@@ -312,7 +305,7 @@ passport.use(
                     message: 'no token'
                 });
             }
-            users.findOne({
+            tokens.findOne({
                 "access_token": token
             }, function(err, result) {
                 if (err) {
@@ -348,16 +341,16 @@ app.get('/auth/twitch/callback', passport.authenticate("twitch", {
 });
 app.get('/auth/logout', passport.authenticate("bearer", {
     session: false,
-    failureRedirect: '/'
+    failureRedirect: '/fail'
 }), function(req, res) {
-    users.updateOne({
-        "access_token": req.user.access_token
-    }, {
-        $set: {
-            "access_token": 0
-        }
+    tokens.remove({
+        "access_token": { $eq: req.user.access_token }
+    }, function(err) {
+        if (err) { console.log(err); }
+        req.logout();
+        res.redirect('/');
     });
-    res.redirect('/');
+    
 });
 app.put('/api/vote/:pollid/:vote', function(req, res) {
     var voteresult = addVote(Number(req.params.pollid), req.params.vote - 1);
@@ -434,9 +427,7 @@ if (process.env.DEBUG_MODE) {
         });
     });
 
-    app.get('/api/debug/users', passport.authenticate("bearer", {
-        session: false
-    }), function(req, res) {
+    app.get('/api/debug/users', function(req, res) {
         users.find().toArray(function(err, result) {
             if (err) throw err;
             res.json({
@@ -445,13 +436,20 @@ if (process.env.DEBUG_MODE) {
         });
     });
 
-    app.get('/api/debug/polls', passport.authenticate("bearer", {
-        session: false
-    }), function(req, res) {
+    app.get('/api/debug/polls', function(req, res) {
         polls.find().toArray(function(err, result) {
             if (err) throw err;
             res.json({
                 'polls': JSON.stringify(result)
+            });
+        });
+    });
+    
+    app.get('/api/debug/tokens', function(req, res) {
+        tokens.find().toArray(function(err, result) {
+            if (err) throw err;
+            res.json({
+                'tokens': JSON.stringify(result)
             });
         });
     });
@@ -501,6 +499,7 @@ function getIndex(req, res, next, user) {
 
 function getActivity(req, res, next, user) {
     var template = {};
+    console.log(user);
     if (user) {
         template.user = user.username;
     }
@@ -535,6 +534,7 @@ function getActivity(req, res, next, user) {
         }
         fs.readFile(path.join(__dirname, 'static/activity.html'), function response(err, html) {
             if (err) console.log(err);
+            console.log(template);
             res.write(mustache.to_html(html.toString('utf-8'), template));
             res.end();
         });
