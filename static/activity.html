@@ -18,29 +18,25 @@
         <div class="grid-x grid-padding-x">
             <div class="medium-6 cell">
                 <h1>My Activity - <a onclick="getHome()">Home</a></h1>
-                
+
             </div>
             <div class="medium-6 cell">
                 {{#user}}
                 <h3>Hello, {{user}}.</h3>
-                <a onclick="logout()" class="button login">Logout</a>
-                {{/user}}
-                {{^user}}
-                <a href="/auth/twitch" class="button login">Login To Twitch</a>
-                {{/user}}
+                <a onclick="logout()" class="button login">Logout</a> {{/user}} {{^user}}
+                <a href="/auth/twitch" class="button login">Login To Twitch</a> {{/user}}
             </div>
-            
+
             <div class="large-12 cell">
                 {{#polltitle}}
                 <h3 id="polltitle">{{polltitle}}</h3>
-                {{/polltitle}}
-                {{^polltitle}}
+                {{/polltitle}} {{^polltitle}}
                 <h5 id="polltitle">Make a poll, and people will be able to vote on it through twitch chat and this website.</h5>
                 {{/polltitle}}
             </div>
-            
-            
-                
+
+
+
         </div>
         <div class="grid-x grid-padding-x data-container">
             {{#graph}}
@@ -48,8 +44,7 @@
                 <canvas id="myChart" width="100" height="100"></canvas>
                 <a onClick="deletePoll()" class="button">End your poll</a>
             </div>
-            {{/graph}}
-            {{#question}}
+            {{/graph}} {{#question}}
             <div class="cell auto" id="voteContainer">
                 <label>{{question}}</label>
                 <select id="voteselection">
@@ -61,8 +56,7 @@
                     <a onClick="vote()" class="button">Vote</a>
                 </div>
             </div>
-            {{/question}}
-            {{#polltypes}}
+            {{/question}} {{#polltypes}}
             <div class="auto cell" id="settingsContainer">
                 <ul class="tabs" data-tabs id="twitch-tabs">
                     <li class="tabs-title is-active"><a href="#vote" aria-selected="true">Poll</a></li>
@@ -71,34 +65,33 @@
                     {{/hidethis}}
                 </ul>
                 <div class="tabs-content" data-tabs-content="twitch-tabs">
-                    <div class="tabs-panel is-active grid-container" id="vote">
-                        <div class="grid-x grid-padding-x large-up-12">
-                            <div class="cell" id="voteanswers">
-                                <label>Question</label>
-                                <input id="question" type="text" placeholder="What is your poll question?" />
-                                <div class="answerselection">
-                                    <label>Answer 1</label>
-                                    <input class="large-10 cell" id="answer1" type="text" placeholder="What is one possible answer?" />
+                    <div>
+                        <form id="pollform">
+                            <div id="voteanswers">
+                                <div class="input-group">
+                                    <span class="input-group-label">Question</span>
+                                    <input id="question" class="input-group-field" type="text" placeholder="What is your poll question?" pattern="pollentry" required />
                                 </div>
-                                <!-- <a onClick="removeAnswer()" class="button large-2">-</a> -->
-                                <div class="answerselection">
-                                    <label>Answer 2</label>
-                                    <input id="answer2" type="text" placeholder="What is one possible answer?" />
+                                <span class="form-error" data-form-error-for="question">A question is required.</span>
+
+                                <div class="answerselection input-group">
+                                    <span class="input-group-label">Answer 1</span>
+                                    <input id="answer1" class="input-group-field" type="text" placeholder="What is one possible answer?" pattern="pollentry" required/>
                                 </div>
+                                <span class="form-error" data-form-error-for="answer1">An answer is required.</span>
+                                <div class="answerselection input-group">
+                                    <span class="input-group-label">Answer 2</span>
+                                    <input type="text" id="answer2" class="input-group-field" type="text" placeholder="What is one possible answer?" pattern="pollentry" required/>
+                                </div>
+                                <span class="form-error" data-form-error-for="answer2">An answer is required.</span>
                             </div>
-                        </div>
-                        <div class="grid-x grid-padding-x">
-                            <div class="small-4 cell">
-                                <a onClick="submitPoll()" class="button">Start Your Poll</a>
-                            </div>
-                            <div class="small-2 cell">
+                            <fieldset>
+                                <!-- submit handled through event script -->
+                                <a class="button" type="submit" value="Submit" onclick="submitPoll()">Start Your Poll</a>
                                 <a onClick="addAnswer()" class="button">+</a>
-                            </div>
-                            <div class="small-2 cell">
                                 <a onClick="removeAnswer()" class="button">-</a>
-                            </div>
-                            <div class="auto cell">&nbsp;</div>
-                        </div>
+                            </fieldset>
+                        </form>
                     </div>
                     {{#hidethis}}
                     <div class="tabs-panel" id="pictionary">
@@ -120,6 +113,7 @@
 
     <script src="/js/vendor/jquery.js"></script>
     <script src="/js/vendor/what-input.js"></script>
+
     <script src="/js/vendor/foundation.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js"></script>
 

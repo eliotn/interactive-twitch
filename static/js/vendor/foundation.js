@@ -1438,6 +1438,7 @@ var Accordion = function (_Plugin) {
     /**
      * Creates a new instance of an accordion.
      * @class
+     * @name Accordion
      * @fires Accordion#init
      * @param {jQuery} element - jQuery object to make into an accordion.
      * @param {Object} options - a plain object with settings to override the default options.
@@ -1818,6 +1819,7 @@ var AccordionMenu = function (_Plugin) {
     /**
      * Creates a new instance of an accordion menu.
      * @class
+     * @name AccordionMenu
      * @fires AccordionMenu#init
      * @param {jQuery} element - jQuery object to make into an accordion menu.
      * @param {Object} options - Overrides to the default plugin settings.
@@ -2206,6 +2208,7 @@ var Drilldown = function (_Plugin) {
     /**
      * Creates a new instance of a drilldown menu.
      * @class
+     * @name Drilldown
      * @param {jQuery} element - jQuery object to make into an accordion menu.
      * @param {Object} options - Overrides to the default plugin settings.
      */
@@ -2815,6 +2818,7 @@ var DropdownMenu = function (_Plugin) {
     /**
      * Creates a new instance of DropdownMenu.
      * @class
+     * @name DropdownMenu
      * @fires DropdownMenu#init
      * @param {jQuery} element - jQuery object to make into a dropdown menu.
      * @param {Object} options - Overrides to the default plugin settings.
@@ -3337,6 +3341,7 @@ var Tabs = function (_Plugin) {
     /**
      * Creates a new instance of tabs.
      * @class
+     * @name Tabs
      * @fires Tabs#init
      * @param {jQuery} element - jQuery object to make into tabs.
      * @param {Object} options - Overrides to the default plugin settings.
@@ -4297,6 +4302,7 @@ var Abide = function (_Plugin) {
     /**
      * Creates a new instance of Abide.
      * @class
+     * @name Abide
      * @fires Abide#init
      * @param {Object} element - jQuery object to add the trigger to.
      * @param {Object} options - Overrides to the default plugin settings.
@@ -4873,7 +4879,7 @@ Abide.defaults = {
     number: /^[-+]?\d*(?:[\.\,]\d+)?$/,
 
     // amex, visa, diners
-    card: /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/,
+    card: /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|(?:222[1-9]|2[3-6][0-9]{2}|27[0-1][0-9]|2720)[0-9]{12}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/,
     cvv: /^([0-9]){3,4}$/,
 
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#valid-e-mail-address
@@ -4931,11 +4937,14 @@ Abide.defaults = {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_jquery__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__foundation_util_core__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__foundation_util_mediaQuery__ = __webpack_require__(3);
 
 
 
 
-var FOUNDATION_VERSION = '6.4.0';
+
+
+var FOUNDATION_VERSION = '6.4.1';
 
 // Global Foundation object
 // This is attached to the window, or used as a module for AMD/Browserify
@@ -5133,7 +5142,7 @@ var Foundation = {
 
       if (type === 'undefined') {
         //needs to initialize the Foundation object, or an individual plugin.
-        Foundation.MediaQuery._init();
+        __WEBPACK_IMPORTED_MODULE_2__foundation_util_mediaQuery__["a" /* MediaQuery */]._init();
         Foundation.reflow(this);
       } else if (type === 'string') {
         //an individual method to invoke on a plugin or group of plugins
@@ -5330,6 +5339,7 @@ var Dropdown = function (_Positionable) {
     /**
      * Creates a new instance of a dropdown.
      * @class
+     * @name Dropdown
      * @param {jQuery} element - jQuery object to make into a dropdown.
      *        Object should be of the dropdown panel, rather than its anchor.
      * @param {Object} options - Overrides to the default plugin settings.
@@ -5774,6 +5784,7 @@ var Equalizer = function (_Plugin) {
     /**
      * Creates a new instance of Equalizer.
      * @class
+     * @name Equalizer
      * @fires Equalizer#init
      * @param {Object} element - jQuery object to add the trigger to.
      * @param {Object} options - Overrides to the default plugin settings.
@@ -6171,6 +6182,7 @@ var Interchange = function (_Plugin) {
     /**
      * Creates a new instance of Interchange.
      * @class
+     * @name Interchange
      * @fires Interchange#init
      * @param {Object} element - jQuery object to add the trigger to.
      * @param {Object} options - Overrides to the default plugin settings.
@@ -6332,6 +6344,7 @@ var Interchange = function (_Plugin) {
       }
       // Replacing background images
       else if (path.match(/\.(gif|jpg|jpeg|png|svg|tiff)([?#].*)?/i)) {
+          path = path.replace(/\(/g, '%28').replace(/\)/g, '%29');
           this.$element.css({ 'background-image': 'url(' + path + ')' }).trigger(trigger);
         }
         // Replacing HTML
@@ -6435,6 +6448,7 @@ var Magellan = function (_Plugin) {
     /**
      * Creates a new instance of Magellan.
      * @class
+     * @name Magellan
      * @fires Magellan#init
      * @param {Object} element - jQuery object to add the trigger to.
      * @param {Object} options - Overrides to the default plugin settings.
@@ -6757,6 +6771,7 @@ var OffCanvas = function (_Plugin) {
     /**
      * Creates a new instance of an off-canvas wrapper.
      * @class
+     * @name OffCanvas
      * @fires OffCanvas#init
      * @param {Object} element - jQuery object to initialize.
      * @param {Object} options - Overrides to the default plugin settings.
@@ -7384,6 +7399,7 @@ var Orbit = function (_Plugin) {
     /**
     * Creates a new instance of an orbit carousel.
     * @class
+    * @name Orbit
     * @param {jQuery} element - jQuery object to make into an Orbit Carousel.
     * @param {Object} options - Overrides to the default plugin settings.
     */
@@ -7992,6 +8008,7 @@ var ResponsiveAccordionTabs = function (_Plugin) {
     /**
      * Creates a new instance of a responsive accordion tabs.
      * @class
+     * @name ResponsiveAccordionTabs
      * @fires ResponsiveAccordionTabs#init
      * @param {jQuery} element - jQuery object to make into Responsive Accordion Tabs.
      * @param {Object} options - Overrides to the default plugin settings.
@@ -8290,6 +8307,7 @@ var ResponsiveMenu = function (_Plugin) {
     /**
      * Creates a new instance of a responsive menu.
      * @class
+     * @name ResponsiveMenu
      * @fires ResponsiveMenu#init
      * @param {jQuery} element - jQuery object to make into a dropdown menu.
      * @param {Object} options - Overrides to the default plugin settings.
@@ -8469,6 +8487,7 @@ var ResponsiveToggle = function (_Plugin) {
     /**
      * Creates a new instance of Tab Bar.
      * @class
+     * @name ResponsiveToggle
      * @fires ResponsiveToggle#init
      * @param {jQuery} element - jQuery object to attach tab bar functionality to.
      * @param {Object} options - Overrides to the default plugin settings.
@@ -8676,6 +8695,7 @@ var Reveal = function (_Plugin) {
     /**
      * Creates a new instance of Reveal.
      * @class
+     * @name Reveal
      * @param {jQuery} element - jQuery object to use for the modal.
      * @param {Object} options - optional parameters.
      */
@@ -9325,6 +9345,7 @@ var Slider = function (_Plugin) {
     /**
      * Creates a new instance of a slider control.
      * @class
+     * @name Slider
      * @param {jQuery} element - jQuery object to make into a slider control.
      * @param {Object} options - Overrides to the default plugin settings.
      */
@@ -10122,6 +10143,7 @@ var Sticky = function (_Plugin) {
     /**
      * Creates a new instance of a sticky thing.
      * @class
+     * @name Sticky
      * @param {jQuery} element - jQuery object to make sticky.
      * @param {Object} options - options object passed when creating the element programmatically.
      */
@@ -10699,6 +10721,7 @@ var Toggler = function (_Plugin) {
     /**
      * Creates a new instance of Toggler.
      * @class
+     * @name Toggler
      * @fires Toggler#init
      * @param {Object} element - jQuery object to add the trigger to.
      * @param {Object} options - Overrides to the default plugin settings.
@@ -10900,6 +10923,7 @@ var Tooltip = function (_Positionable) {
     /**
      * Creates a new instance of a Tooltip.
      * @class
+     * @name Tooltip
      * @fires Tooltip#init
      * @param {jQuery} element - jQuery object to attach a tooltip to.
      * @param {Object} options - object to extend the default configuration.
@@ -11398,6 +11422,15 @@ var SmoothScroll = function (_Plugin) {
 
     _createClass(SmoothScroll, [{
         key: '_setup',
+
+        /**
+         * Creates a new instance of SmoothScroll.
+         * @class
+         * @name SmoothScroll
+         * @fires SmoothScroll#init
+         * @param {Object} element - jQuery object to add the trigger to.
+         * @param {Object} options - Overrides to the default plugin settings.
+         */
         value: function _setup(element, options) {
             this.$element = element;
             this.options = __WEBPACK_IMPORTED_MODULE_0_jquery___default.a.extend({}, SmoothScroll.defaults, this.$element.data(), options);

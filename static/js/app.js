@@ -1,4 +1,27 @@
-$(document).foundation()
+Foundation.Abide.defaults.patterns['pollentry'] = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-\s]*$/;
+$(document).foundation();
+/*$(document).on("submit", function(ev) {
+  ev.preventDefault();
+  console.log("Submit for form id "+ev.target.id+" intercepted");
+});*/
+
+//http://foundation.zurb.com/forum/posts/37267-foundation-6-abide-trigger-without-submit-button
+/*$("#pollform").bind("submit",function(e) {
+  e.preventDefault();
+  console.log("submit intercepted");
+  return false;
+});*/
+//var elem = new Foundation.Abide($("pollform"), {});
+
+//$('#pollform').foundation('resetForm');
+//$('#pollform').foundation('validateForm');
+/*$("#pollform").on("forminvalid.zf.abide", function(e,target) {
+  console.log("form is invalid");
+}).on("formvalid.zf.abide", function(e,target) {
+  console.log("form is valid");
+  submitPoll();  
+});*/
+
 
 function logout() {
    window.location.href='/auth/logout' + window.location.search;
@@ -14,8 +37,15 @@ function getActivity(userid) {
 function addAnswer() {
   var answernum = document.getElementsByClassName('answerselection').length + 1;
   document.getElementById("voteanswers").innerHTML = document.getElementById("voteanswers").innerHTML +
-    '<div class="answerselection"><label>Answer ' + answernum + '</label><input id="answer' + answernum + '" type="text" ' +
-    'placeholder="What is one possible answer?" /></div>';
+    '<div class="answerselection input-group">' +
+      '<span class="input-group-label">Answer ' + answernum + '</span>' + 
+        '<input id="answer' + answernum + '" class="input-group-field" type="text" placeholder="What is one possible answer?" pattern="pollentry" required/>' +
+    '</div>' +
+    '<span class="form-error" data-form-error-for="answer' + answernum + '">An answer is required.</span>';
+    /*elem.destroy();
+    elem = new Foundation.Abide($("pollform"), {});
+    $('#pollform').foundation('resetForm');
+    $('#pollform').foundation('validateForm');*/
 }
 
 function removeAnswer() {

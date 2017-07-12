@@ -340,8 +340,7 @@ app.get('/auth/twitch/callback', passport.authenticate("twitch", {
     res.redirect('/activity/' + req.user.userid + '?access_token=' + req.user.access_token);
 });
 app.get('/auth/logout', passport.authenticate("bearer", {
-    session: false,
-    failureRedirect: '/fail'
+    session: false
 }), function(req, res) {
     tokens.remove({
         "access_token": { $eq: req.user.access_token }
