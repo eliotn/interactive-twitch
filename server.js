@@ -1,6 +1,3 @@
-//TODO: figure out why there seems to be a double execute sometime with twitch
-//passport
-
 const SERVER = process.env.SERVER_URL || "https://test-eliotn.c9users.io";
 const PORT = process.env.PORT || 3000;
 const DROP_DATA = true;
