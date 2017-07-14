@@ -1,21 +1,21 @@
 {
-  "name": "voting-app",
+  "name": "interactive-twitch",
   "version": "0.0.1",
-  "description": "A voting application where people can share their votes",
+  "description": "A new way for twitch broadcasters to interact with their viewers.",
   "main": "server.js",
   "scripts": {
     "test": "node server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eliotn/p1xt-guide-implementation.git"
+    "url": "git+https://github.com/eliotn/interactive-twitch.git"
   },
   "author": "Eliot James Glairon",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/eliotn/p1xt-guide-implementation/issues"
+    "url": "https://github.com/eliotn/interactive-twitch/issues"
   },
-  "homepage": "https://github.com/eliotn/p1xt-guide-implementation#readme",
+  "homepage": "https://github.com/eliotn/interactive-twitch#readme",
   "dependencies": {
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
