@@ -9,7 +9,7 @@ A live version of the app is currently on https://interactive-twitch.herokuapp.c
 
 If you want to run this app yourself, you will need to create a twitch account.
 Then, register an application at https://www.twitch.tv/kraken/oauth2/clients/new.
-Make sure to set the redirect URI to *your server url* + '/auth/twitch/callback'
+Make sure to set the redirect URI to your server url + '/auth/twitch/callback'
 Go to https://twitchapps.com/tmi/ to generate a new OAUTH token.
 
 Define the following variables in your environment:
@@ -25,7 +25,7 @@ OAUTH_SECRET should be set to your OAUTH token.
 With [npm](https://npmjs.org/) installed, and a mongo database running on MONGO_URL
 
 ```shell
-$ npm install
+npm install
 node server.js
 ```
 
@@ -35,11 +35,11 @@ MIT
 
 ## Authors
 
-*Eliot Glairon
+Eliot Glairon
 
 ## Acknowledgements
 
-*Thank you to [CodeBreak](https://codebreak.srnd.org/) for inspiring me to do this project.# voting-app
+Thank you to [CodeBreak](https://codebreak.srnd.org/) for inspiring me to do this project.# voting-app
 
 
 
