@@ -39,8 +39,4 @@ Eliot Glairon
 
 ## Acknowledgements
 
-Thank you to [CodeBreak](https://codebreak.srnd.org/) for inspiring me to do this project.# voting-app
-
-
-
-
+Thank you to [CodeBreak](https://codebreak.srnd.org/) for inspiring me to do this project.
