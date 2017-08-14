@@ -1,6 +1,6 @@
 const SERVER = process.env.SERVER_URL || "https://test-eliotn.c9users.io";
 const PORT = process.env.PORT || 3000;
-const DROP_DATA = true;
+const DROP_DATA = false;
 const MONGO_URL = process.env.MONGO_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/twitchvotes';
 const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const OAUTH_SECRET = process.env.OAUTH_SECRET;
@@ -23,10 +23,11 @@ app.use(bodyParser.json());
 //users contains the following
 //access_token, userid, tokenUpdateTime
 //polls contains the following
-//userid, question, [answer], [votes]
+//userid, pollid, question, [answer], [votes]
 var users; //get the collection
 var polls; //get the polls
 var tokens;
+//Connect to database and reference collections
 MongoClient.connect(MONGO_URL, function(err, database) {
     if (err) throw err;
     users = database.collection('users');
@@ -73,7 +74,7 @@ function addVote(pollid, vote, user) {
     console.log(vote);
     var result_json = {};
     polls.findOne({
-        "userid": Number(pollid)
+        "pollid": Number(pollid)
     }, {}, function(err, results) {
         if (err) {
             result_json = {
@@ -146,8 +147,8 @@ function createPoll(pollid, question, answerlist) {
             votes.push(0);
         }
 
-        if (!results) {
-            console.log("poll needs to be created");
+        /*if (!results) {
+            console.log("poll needs to be created");*/
             polls.insert({
                 "usersvoted": [],
                 "userid": Number(pollid),
@@ -162,7 +163,7 @@ function createPoll(pollid, question, answerlist) {
                     "Note": "Poll added"
                 };
             });
-        }
+        /*}
         else {
             console.log("update poll with new information");
             polls.updateOne({
@@ -177,7 +178,7 @@ function createPoll(pollid, question, answerlist) {
             result_json = {
                 "Note": "Poll updated"
             };
-        }
+        }*/
     });
     return result_json;
 }
@@ -480,9 +481,15 @@ function getIndex(req, res, next, user) {
             return;
         }
         if (result) {
+            //use hash to aggregate polls to users, TODO: is this a good fix
             template.polls = [];
+            var usersWithPolls = {};
             for (var i = 0; i < result.length; i++) {
-                template.polls.push(result[i].userid);
+                usersWithPolls[result[i].userid] = true;
+                
+            }
+            for (var v in usersWithPolls) {
+                template.polls.push(v);
             }
         }
         fs.readFile(path.join(__dirname, 'static/index.html'), function response(err, html) {
@@ -499,11 +506,13 @@ function getActivity(req, res, next, user) {
     if (user) {
         template.user = user.username;
     }
-    polls.findOne({
+    polls.find({
         "userid": Number(req.params.userid)
-    }, {}, function(err, results) {
+    }).toArray(function(err, results) {
         if (err) console.log(err);
+        console.log(results);
         var answers = [];
+        //I created the polls
         if (user && user.userid == req.params.userid) {
             if (results) {
                 template["graph"] = "graph";
@@ -511,26 +520,33 @@ function getActivity(req, res, next, user) {
             }
             template.polltypes = ["voting"]
         }
+        //can't find the polls
         else if (results == null) {
             res.status(404).send("Poll not found");
             return;
         }
+        //I am voting on the polls
         else {
-            template.question = results.question;
-
-            for (var i = 0; i < results.answers.length; i++) {
-                answers.push({
-                    "index": i + 1,
-                    "value": results.answers[i]
-                })
+            for (var poll of results) {
+                template.polls = template.polls || [];
+                var templatepoll = {
+                    "question": poll.question,
+                    "answers": []
+                }
+                for (var i = 0; i < poll.answers.length; i++) {
+                    templatepoll.answers.push({
+                        "index": i + 1,
+                        "value": poll.answers[i]
+                    });
+                }
+                template.polls.push(templatepoll);
+                template.polltitle = "Viewing someone else's poll";
             }
-            template.answers = answers;
-            template.polltitle = "Viewing someone else's poll";
 
         }
         fs.readFile(path.join(__dirname, 'static/activity.html'), function response(err, html) {
             if (err) console.log(err);
-            console.log(template);
+            console.log(JSON.stringify(template));
             res.write(mustache.to_html(html.toString('utf-8'), template));
             res.end();
         });
