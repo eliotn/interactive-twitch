@@ -17,10 +17,12 @@
   },
   "homepage": "https://github.com/eliotn/interactive-twitch#readme",
   "dependencies": {
+    "bluebird": "^3.5.0",
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
     "express-session": "^1.15.3",
     "foundation-cli": "^2.2.3",
+    "hashids": "^1.1.1",
     "http": "0.0.0",
     "mongodb": "^2.2.29",
     "mongoose": "^4.11.0",

@@ -5,7 +5,7 @@ const MONGO_URL = process.env.MONGO_URL || process.env.MONGODB_URI || 'mongodb:/
 const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const OAUTH_SECRET = process.env.OAUTH_SECRET;
 const TWITCH_SECRET = process.env.TWITCH_SECRET;
-
+const HASH_SECRET = process.env.HASH_SECRET || "INTERACTIVE_TWITCH";
 //express
 const express = require('express');
 const app = express();
@@ -27,29 +27,36 @@ app.use(bodyParser.json());
 var users; //get the collection
 var polls; //get the polls
 var tokens;
+var counters;
 //Connect to database and reference collections
 MongoClient.connect(MONGO_URL, function(err, database) {
     if (err) throw err;
     users = database.collection('users');
     polls = database.collection('polls');
     tokens = database.collection('tokens');
+    counters = database.collection('counters');
     if (DROP_DATA) { //utility function to retest with new data
         users.drop();
         polls.drop();
         tokens.drop();
+        counters.drop();
         //tokens have a lifetime of 2400 seconds (60 minutes)
         tokens.createIndex({
             "tokenUpdateTime": 1
         }, {
             "expireAfterSeconds": 2400
         });
+        counters.insert( { "_id": "pollcounter", "seq":1} );
     }
 });
+
+var Hashids = require('hashids')
+var hashids = new Hashids(HASH_SECRET);
 
 function deletePoll(pollid) {
     var returnval = {};
     polls.findOneAndDelete({
-        "userid": Number(pollid)
+        "pollid": Number(pollid)
     }, function(err, res) {
         if (err) returnval = {
             "err": err
@@ -96,7 +103,7 @@ function addVote(pollid, vote, user) {
             return;
         }
         polls.updateOne({
-            "userid": Number(pollid)
+            "pollid": Number(pollid)
         }, {
             $inc: {
                 ["votes." + String(vote)]: 1
@@ -114,7 +121,7 @@ function addVote(pollid, vote, user) {
             };
             if (user && !("err" in result_json)) {
                 polls.updateOne({
-                    "userid": Number(pollid)
+                    "pollid": Number(pollid)
                 }, {
                     $push: {
                         "usersvoted": Number(user)
@@ -122,13 +129,11 @@ function addVote(pollid, vote, user) {
                 });
             }
         });
-
-
     });
     return result_json;
 }
 
-//creates a poll
+//creates a poll, async generator to output synchronously
 function createPoll(userid, question, answerlist) {
     var result_json = {};
     polls.findOne({
@@ -146,13 +151,20 @@ function createPoll(userid, question, answerlist) {
         for (var answer in answerlist) {
             votes.push(0);
         }
-
-        /*if (!results) {
-            console.log("poll needs to be created");*/
+            //update the poll id counter
+            counters.findOneAndUpdate({ _id: "pollcounter" },
+    { $inc: { seq: 1 } }, function(err, result) {
+            if(err) {
+                result_json = { "err":err};
+                return;
+            }
+            console.log(result.value)
+            var pollid = hashids.encode(result.value.seq);
+            console.log("Creating poll with id " + pollid);
             polls.insert({
                 "usersvoted": [],
                 "userid": Number(userid),
-                "pollid": null,//TODO: Hash pollid
+                "pollid": pollid,
                 "question": question,
                 "answers": answers,
                 "votes": votes
@@ -164,24 +176,10 @@ function createPoll(userid, question, answerlist) {
                     "Note": "Poll added"
                 };
             });
-        /*}
-        else {
-            console.log("update poll with new information");
-            polls.updateOne({
-                "userid": Number(pollid)
-            }, {
-                $set: {
-                    "question": question,
-                    "answers": answers,
-                    "votes": votes
-                }
-            });
-            result_json = {
-                "Note": "Poll updated"
-            };
-        }*/
+        });
+        
     });
-    return result_json;
+    return result_json;//TODO: Doesn't work right due to async
 }
 
 
@@ -357,12 +355,14 @@ app.put('/api/vote/:pollid/:vote', function(req, res) {
     }
     res.json(voteresult)
 });
+
+//get all polls for a user
 app.get('/api/poll', passport.authenticate("bearer", {
     session: false
 }), function(req, res) {
-    polls.findOne({
+    polls.find({
         "userid": req.user.userid
-    }, {}, function(err, results) {
+    }).toArray(function(err, results) {
         if (err) {
             res.json({
                 "err": err
@@ -375,12 +375,19 @@ app.get('/api/poll', passport.authenticate("bearer", {
             });
             return;
         }
-        var object = {
-            "question": results.question,
-            "answers": results.answers,
-            "votes": results.votes
-        };
-        res.json(object);
+        var result_json = [];
+        for (var poll of results) {
+            console.log(poll);
+            var poll_representation = {
+            "question": poll.question,
+            "answers": poll.answers,
+            "votes": poll.votes
+            };
+            result_json.push(poll_representation);
+        }
+        console.log(result_json);
+        res.write(JSON.stringify({"polls":result_json}));
+        res.end();
         return;
     });
 });
@@ -403,7 +410,7 @@ app.post('/api/poll', passport.authenticate("bearer", {
     }
 });
 
-app.delete('/api/poll', passport.authenticate("bearer", {
+app.delete('/api/poll/', passport.authenticate("bearer", {
     session: false
 }), function(req, res) {
     var delete_status = deletePoll(req.user.userid);
@@ -480,7 +487,6 @@ function getIndex(req, res, next, user) {
             return;
         }
         if (result) {
-            //use hash to aggregate polls to users, TODO: is this a good fix
             template.polls = [];
             var usersWithPolls = {};
             for (var i = 0; i < result.length; i++) {
@@ -515,9 +521,11 @@ function getActivity(req, res, next, user) {
         if (user && user.userid == req.params.userid) {
             if (results) {
                 template["graph"] = "graph";
-                template.polltitles = []
-                for (var poll of results) {
-                    template.polltitles.push(results.question);
+                template.polltitles = [];
+                for (var i = 0; i < results.length; i++) {
+                    template.polltitles.push({"question":results[i].question, "index":i, "selected":(i == 0),
+                        "isactive":((i==0)?"is-active":""), "id":results[i].pollid
+                    });
                 }
             }
             template.polltypes = ["voting"]

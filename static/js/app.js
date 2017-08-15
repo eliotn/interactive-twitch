@@ -1,4 +1,3 @@
-Foundation.Abide.defaults.patterns['pollentry'] = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-\s]*$/;
 $(document).foundation();
 /*$(document).on("submit", function(ev) {
   ev.preventDefault();
@@ -78,7 +77,7 @@ function deletePoll(pollid) {
       location.reload();
     }
   }
-  _xhttp.open("DELETE", "/api/poll/" + location.search);
+  _xhttp.open("DELETE", "/api/poll/" + pollid);
   _xhttp.setRequestHeader('Content-Type', 'application/json');
   _xhttp.send();
 }
@@ -118,30 +117,18 @@ function unauthorized() {
   window.location.href = '/';
 }
 
-function getPoll() {
-  var _xhttp = new XMLHttpRequest();
-  document.getElementById('question').classList;
-  
-  //make async
-  _xhttp.onreadystatechange = function(e) {
-    if ( _xhttp.status === 401) {
-      unauthorized();
-      return;
-    }
-    if (_xhttp.readyState === 4 && _xhttp.status === 200) {
-      var ctx = document.getElementById('myChart').getContext('2d');
+function makeChart(idx, data) {
+  var ctx = document.getElementById('myChart' + idx).getContext('2d');
       var poll_labels = [];
       var poll_data = [];
       var bar_colors = [];
       var all_data = [];
-      var response = JSON.parse(_xhttp.responseText);
-      if ("answers" in response) {
-        for (var i = 0; i < response.answers.length; i++) {
-          all_data.push({"label":response.answers[i], "data":response.votes[i],
+      
+        for (var i = 0; i < data.answers.length; i++) {
+          all_data.push({"label":data.answers[i], "data":data.votes[i],
           "color":["red", "orange", "yellow", "blue", "green", "magenta"][i % 6]});
         }
-        all_data.sort(function(a, b) {return b.data - a.data});
-        for (var i = 0; i < response.answers.length; i++) {
+        for (var i = 0; i < data.answers.length; i++) {
           poll_labels.push(all_data[i].label);
           poll_data.push(all_data[i].data);
           bar_colors.push(all_data[i].color);
@@ -159,26 +146,38 @@ function getPoll() {
           }, //JSON.parse(xhttp.responseText),
           options: {}
         });
-        var chartclasses = document.getElementById("chartContainer").classList;
-        var questionclasses = document.getElementById("settingsContainer").classList;
+        var chartclasses = document.getElementById("chartContainer" + idx).classList;
         if (chartclasses.contains("hide")) {
           chartclasses.remove("hide");
           chartclasses.add("medium-6");
         }
         console.log(chartclasses);
-        console.log(questionclasses);
-      }
+}
 
-      
+function getPolls() {
+  var _xhttp = new XMLHttpRequest();
+  document.getElementById('question').classList;
+  
+  //make async
+  _xhttp.onreadystatechange = function(e) {
+    if ( _xhttp.status === 401) {
+      unauthorized();
+      return;
+    }
+    if (_xhttp.readyState === 4 && _xhttp.status === 200) {
+      var response = JSON.parse(_xhttp.responseText);
+      if ("polls" in response) {
+        console.log(response);
+        for (var i = 0; i < response.polls.length; i++) {
+          makeChart(i, response.polls[i]);
+        }
+      }
     }
   }
   _xhttp.open("GET", "/api/poll" + location.search);
   _xhttp.send();
 }
 
-
-if (document.getElementById('myChart')) {
-  //crude
-  console.log("Sending");
-  getPoll();
-}
+//TODO: If statement for this
+console.log("Getting polls");
+getPolls();
