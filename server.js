@@ -129,10 +129,10 @@ function addVote(pollid, vote, user) {
 }
 
 //creates a poll
-function createPoll(pollid, question, answerlist) {
+function createPoll(userid, question, answerlist) {
     var result_json = {};
     polls.findOne({
-        "userid": Number(pollid)
+        "userid": Number(userid)
     }, {}, function(err, results) {
         if (err) {
             result_json = {
@@ -140,7 +140,7 @@ function createPoll(pollid, question, answerlist) {
             };
             return result_json;
         }
-        //properly format answers
+        //create list of answers and # of votes
         var answers = answerlist;
         var votes = [];
         for (var answer in answerlist) {
@@ -151,7 +151,8 @@ function createPoll(pollid, question, answerlist) {
             console.log("poll needs to be created");*/
             polls.insert({
                 "usersvoted": [],
-                "userid": Number(pollid),
+                "userid": Number(userid),
+                "pollid": null,//TODO: Hash pollid
                 "question": question,
                 "answers": answers,
                 "votes": votes
@@ -249,15 +250,14 @@ app.use(passport.session());
 var twitchStrategy = require("passport-twitch").Strategy;
 var BearerStrategy = require("passport-http-bearer").Strategy;
 
-//read secret from file before starting passport
 passport.use(new twitchStrategy({
     clientID: TWITCH_CLIENT_ID,
     clientSecret: TWITCH_SECRET,
     callbackURL: SERVER + "/auth/twitch/callback",
     scope: "user_read",
     session: false
-}, function(accessToken, refreshToken, profile, done) {
-    //do stuff with the user after you log them in
+}, function(accessToken, refreshToken, profile, done) {//change state after a login
+    
     
             console.log(profile);
             tokens.update({
@@ -284,11 +284,11 @@ passport.use(new twitchStrategy({
             {
                 upsert:true
             });
-        return done(null, {
+        return done(null, {//put data we want access to in the callback here
             "userid": profile.id,
             "access_token": accessToken
         });
-    //put data we want access to in the callback here
+    
 
 }));
 
@@ -414,6 +414,7 @@ app.delete('/api/poll', passport.authenticate("bearer", {
     client.part('#' + req.user.username);
     res.status(204).send("Deleted");
 });
+
 //debug functions don't use in production server
 if (process.env.DEBUG_MODE) {
     app.get('/api/debug/testlogin', passport.authenticate("bearer", {
@@ -451,8 +452,6 @@ if (process.env.DEBUG_MODE) {
         });
     });
 }
-//app.use(express.static(path.join(__dirname, 'static/css')));
-//app.use(express.static(path.join(__dirname, 'static/js')));
 
 //keep css/js files publicly accessible
 app.get('/css/:filename', function(req, res) {
@@ -465,7 +464,7 @@ app.get('/js/vendor/:filename', function(req, res) {
     res.sendFile(path.join(__dirname, 'static/js/vendor/' + req.params.filename));
 });
 
-//http templating
+//http templating used for index and activity pages
 var mustache = require('mustache');
 
 function getIndex(req, res, next, user) {
@@ -516,7 +515,10 @@ function getActivity(req, res, next, user) {
         if (user && user.userid == req.params.userid) {
             if (results) {
                 template["graph"] = "graph";
-                template.polltitle = results.question;
+                template.polltitles = []
+                for (var poll of results) {
+                    template.polltitles.push(results.question);
+                }
             }
             template.polltypes = ["voting"]
         }

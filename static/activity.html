@@ -40,9 +40,18 @@
         </div>
         <div class="grid-x grid-padding-x data-container">
             {{#graph}}
-            <div class="medium-6 cell" id="chartContainer">
-                <canvas id="myChart" width="100" height="100"></canvas>
-                <a onClick="deletePoll()" class="button">End your poll</a>
+            <ul class="tabs" data-tabs id="graph-tabs">
+                {{#polltitles}}
+                <li class="tabs-title is-active"><a href="#chartContainer" aria-selected="true">{{.}}</a></li>
+                {{/polltitles}}
+            </ul>
+            <div class="tabs-content" data-tabs-content="graph-tabs">
+                <div class="medium-6 cell" id="chartContainer">
+                    {{#polltitles}}
+                    <canvas id="myChart" width="100" height="100"></canvas>
+                    <a onClick="deletePoll()" class="button">End your poll</a>
+                    {{/polltitles}}
+                </div>
             </div>
             {{/graph}} {{#polls}}
             <div class="cell auto" id="voteContainer">
