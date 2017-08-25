@@ -62,7 +62,7 @@ function vote(pollid) {
     console.log(_xhttp.readyState);
     console.log(_xhttp.status);
     if (_xhttp.readyState === 4 && _xhttp.status === 200) {
-      document.getElementById("voteContainer").innerHTML = "<h3>Your vote has been recorded.  Thank you.</h3>";
+      document.getElementById("voteContainer" + pollid).innerHTML = "<h3>Your vote has been recorded.  Thank you.</h3>";
     }
   }
   _xhttp.open("PUT", "/api/vote/" + pollid + "/" + selection.options[selection.selectedIndex].value);
