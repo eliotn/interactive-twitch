@@ -128,33 +128,34 @@ function addVote(pollid, vote, user) {
 function createPoll(userid, question, answerlist) {
     var answers = answerlist;
     var votes = [];
-    return polls.findOne({
+    /*return new Promise(function(resolve, reject) {polls.findOne({
         "userid": Number(userid)
-    }).then( function(results) {
+    }, function (err, results) {if (err) {reject(err)}else{resolve(results)}})
+    .then( function(results) {*/
         //create list of answers and # of votes
         for (var answer in answerlist) {
             votes.push(0);
         }
         //update the poll id counter
-        return Promise.resolve(function() {counters.findOneAndUpdate({ _id: "pollcounter" },
-    { $inc: { seq: 1 } })});})
+        return new Promise(function(resolve, reject) {counters.findOneAndUpdate({ _id: "pollcounter" },
+    { $inc: { seq: 1 } }, function(err, results){if (err) {reject(err)} else {resolve(results)}})})
     .then(function(result) {
             console.log(result.value)
             var pollid = hashids.encode(result.value.seq);
             console.log("Creating poll with id " + pollid);
-            return Promise.resolve(function() {polls.insert({
+            return new Promise(function(resolve, reject) {polls.insert({
                 "usersvoted": [],
                 "userid": Number(userid),
                 "pollid": pollid,
                 "question": question,
                 "answers": answers,
                 "votes": votes
+                }, function(err, results){if (err) {reject(err)} else {resolve(results)}});
             });
                 
-        });
-    })
+        })
     .then(function(result) {return {"note":"Poll Added"};})
-    .catch(function(err) {return {"err":err}});
+    .catch(function(err) {return Promise.reject({"err":err})});
 }
 
 
@@ -379,9 +380,17 @@ app.post('/api/poll', passport.authenticate("bearer", {
     if (req.body.question && req.body.answers) {
         client.join("#" + req.user.username);
 
-        res.json(createPoll(Number(req.user.userid), req.body.question, req.body.answers));
-        channelToID["#" + req.user.username] = req.user.userid;
-        client.say("#" + req.user.username, "Poll has been created with question '" + req.body.question + "'");
+        Promise.resolve(createPoll(Number(req.user.userid), req.body.question, req.body.answers))
+        .then(function(result_json) {
+            res.json(result_json);
+            channelToID["#" + req.user.username] = req.user.userid;
+            client.say("#" + req.user.username, "Poll has been created with question '" + req.body.question + "'");
+            
+        })
+        .catch(function(err_json) {
+            res.json(err_json);
+        });
+        
     }
 
     else {
