@@ -31,6 +31,7 @@
     "passport-bearer-strategy": "^1.0.1",
     "passport-http-bearer": "^1.0.1",
     "passport-twitch": "^1.0.3",
+    "poseidon-mongo": "^0.5.0",
     "request": "^2.81.0",
     "socket.io": "^2.0.3",
     "tmi.js": "^1.2.1"

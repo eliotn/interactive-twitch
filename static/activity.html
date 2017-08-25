@@ -60,13 +60,13 @@
             {{/graph}} {{#polls}}
             <div class="cell auto" id="voteContainer">
                 <label>{{question}}</label>
-                <select id="voteselection">
+                <select id="voteselection{{id}}">
                   {{#answers}}
                   <option value="{{index}}">{{value}}</option>
                   {{/answers}} 
                 </select>
                 <div class="large-4 cell">
-                    <a onClick="vote()" class="button">Vote</a>
+                    <a onClick="vote('{{id}}')" class="button">Vote</a>
                 </div>
             </div>
             {{/polls}} {{#polltypes}}

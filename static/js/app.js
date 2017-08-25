@@ -54,10 +54,10 @@ function removeAnswer() {
   }
 }
 
-function vote() {
+function vote(pollid) {
   var _xhttp = new XMLHttpRequest();
-  var userid = window.location.pathname.split("/")[2];
-  var selection = document.getElementById("voteselection");
+  //var userid = window.location.pathname.split("/")[2];
+  var selection = document.getElementById("voteselection" + pollid);
   _xhttp.onreadystatechange = function(e) {
     console.log(_xhttp.readyState);
     console.log(_xhttp.status);
@@ -65,7 +65,7 @@ function vote() {
       document.getElementById("voteContainer").innerHTML = "<h3>Your vote has been recorded.  Thank you.</h3>";
     }
   }
-  _xhttp.open("PUT", "/api/vote/" + userid + "/" + selection.options[selection.selectedIndex].value);
+  _xhttp.open("PUT", "/api/vote/" + pollid + "/" + selection.options[selection.selectedIndex].value);
   _xhttp.setRequestHeader('Content-Type', 'application/json');
   _xhttp.send();
 }

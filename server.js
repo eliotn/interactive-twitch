@@ -12,6 +12,7 @@ const app = express();
 
 //setup file server
 const path = require('path');
+var Promise = require('bluebird');
 
 
 var MongoClient = require('mongodb').MongoClient;
@@ -29,8 +30,7 @@ var polls; //get the polls
 var tokens;
 var counters;
 //Connect to database and reference collections
-MongoClient.connect(MONGO_URL, function(err, database) {
-    if (err) throw err;
+MongoClient.connect(MONGO_URL).then(function(database) {
     users = database.collection('users');
     polls = database.collection('polls');
     tokens = database.collection('tokens');
@@ -48,6 +48,8 @@ MongoClient.connect(MONGO_URL, function(err, database) {
         });
         counters.insert( { "_id": "pollcounter", "seq":1} );
     }
+}, function(err) {
+    throw err;
 });
 
 var Hashids = require('hashids')
@@ -80,106 +82,79 @@ function addVote(pollid, vote, user) {
     console.log(pollid);
     console.log(vote);
     var result_json = {};
-    polls.findOne({
-        "pollid": Number(pollid)
-    }, {}, function(err, results) {
-        if (err) {
-            result_json = {
-                "err": err
-            };
-            return;
+    var p = new Promise(function(resolve, reject) {polls.findOne({
+        "pollid": pollid
+    }, function(err, result){if (err){ reject(err);}else{ resolve(result);}})})
+    .then( function(results) {
+        if (!results) {
+            throw "Poll not found";
         }
-
-        if (!results || vote < 0 || results.answers.length - 1 < vote) {
-            result_json = {
-                "err": "Poll not found"
-            };
-            return;
+        if (vote < 0 || results.answers.length - 1 < vote) {
+            throw "Invalid vote";
         }
-        if (results.usersvoted.indexOf(Number(user)) != -1) {
-            result_json = {
-                "err": "You already voted"
-            };
-            return;
+        else if (results.usersvoted.indexOf(Number(user)) != -1) {
+            throw "You already voted";
         }
-        polls.updateOne({
-            "pollid": Number(pollid)
+        console.log("first");
+        return new Promise(function(resolve, reject) {polls.updateOne({
+            "pollid": pollid
         }, {
             $inc: {
                 ["votes." + String(vote)]: 1
             }
-        }, function(err, results) {
-            if (err) {
-                result_json = {
-                    "err": err
-                };
-            }
-            else {
-                result_json = {
-                    "Note:": "vote counted"
-                }
-            };
-            if (user && !("err" in result_json)) {
-                polls.updateOne({
-                    "pollid": Number(pollid)
+        }, function(err, result) {console.log("vote finished"); if (err){ reject(err);}else{ resolve(result);}})});
+    }).then(function(results){
+        console.log("Past one then");
+        return new Promise(function(resolve, reject) {polls.updateOne({
+                    "pollid": pollid
                 }, {
                     $push: {
                         "usersvoted": Number(user)
                     }
-                });
-            }
-        });
+                }, function(err, result){if (err){ reject(err);}else{ resolve(result);}})});
+    }).then(function(results) {
+        
+        console.log("Promise completed");   
+        return Promise.resolve({"Note:":"vote counted"});
+    })
+    .catch(function(err) {
+        console.log(err);
+        return Promise.reject({"err": err});
     });
-    return result_json;
+    return p;
 }
 
 //creates a poll, async generator to output synchronously
 function createPoll(userid, question, answerlist) {
-    var result_json = {};
-    polls.findOne({
+    var answers = answerlist;
+    var votes = [];
+    return polls.findOne({
         "userid": Number(userid)
-    }, {}, function(err, results) {
-        if (err) {
-            result_json = {
-                "err": err
-            };
-            return result_json;
-        }
+    }).then( function(results) {
         //create list of answers and # of votes
-        var answers = answerlist;
-        var votes = [];
         for (var answer in answerlist) {
             votes.push(0);
         }
-            //update the poll id counter
-            counters.findOneAndUpdate({ _id: "pollcounter" },
-    { $inc: { seq: 1 } }, function(err, result) {
-            if(err) {
-                result_json = { "err":err};
-                return;
-            }
+        //update the poll id counter
+        return Promise.resolve(function() {counters.findOneAndUpdate({ _id: "pollcounter" },
+    { $inc: { seq: 1 } })});})
+    .then(function(result) {
             console.log(result.value)
             var pollid = hashids.encode(result.value.seq);
             console.log("Creating poll with id " + pollid);
-            polls.insert({
+            return Promise.resolve(function() {polls.insert({
                 "usersvoted": [],
                 "userid": Number(userid),
                 "pollid": pollid,
                 "question": question,
                 "answers": answers,
                 "votes": votes
-            }, function(err) {
-                if (err) result_json = {
-                    "err": err
-                };
-                else result_json = {
-                    "Note": "Poll added"
-                };
             });
+                
         });
-        
-    });
-    return result_json;//TODO: Doesn't work right due to async
+    })
+    .then(function(result) {return {"note":"Poll Added"};})
+    .catch(function(err) {return {"err":err}});
 }
 
 
@@ -348,12 +323,18 @@ app.get('/auth/logout', passport.authenticate("bearer", {
     
 });
 app.put('/api/vote/:pollid/:vote', function(req, res) {
-    var voteresult = addVote(Number(req.params.pollid), req.params.vote - 1);
-    if ("err" in voteresult) {
-        res.status(404).send();
-        return;
-    }
-    res.json(voteresult)
+    Promise.resolve(addVote(req.params.pollid, req.params.vote - 1)).then(
+        function (voteresult) {
+            console.log("voted");
+            res.json(voteresult)
+        },
+        function (error) {
+            console.log("vote failed");
+            res.status(404).send();
+        }
+    );
+    
+    
 });
 
 //get all polls for a user
@@ -541,7 +522,8 @@ function getActivity(req, res, next, user) {
                 template.polls = template.polls || [];
                 var templatepoll = {
                     "question": poll.question,
-                    "answers": []
+                    "answers": [],
+                    "id": poll.pollid
                 }
                 for (var i = 0; i < poll.answers.length; i++) {
                     templatepoll.answers.push({
