@@ -25,6 +25,7 @@ app.use(bodyParser.json());
 //access_token, userid, tokenUpdateTime
 //polls contains the following
 //userid, pollid, question, [answer], [votes]
+//tokens contains a list of tokens for different users
 var users; //get the collection
 var polls; //get the polls
 var tokens;
@@ -74,7 +75,7 @@ function deletePoll(pollid) {
 }
 
 
-//adds vote, requires number pollid and vote option
+//Returns a promise that adds a vote, requires number pollid and vote option
 function addVote(pollid, vote, user) {
     console.log("Starting vote!");
     console.log(pollid);
@@ -122,25 +123,22 @@ function addVote(pollid, vote, user) {
     return p;
 }
 
-//creates a poll, async generator to output synchronously
+//returns a promise that will create the poll
 function createPoll(userid, question, answerlist) {
     var answers = answerlist;
     var votes = [];
-    /*return new Promise(function(resolve, reject) {polls.findOne({
-        "userid": Number(userid)
-    }, function (err, results) {if (err) {reject(err)}else{resolve(results)}})
-    .then( function(results) {*/
-        //create list of answers and # of votes
-        for (var answer in answerlist) {
-            votes.push(0);
-        }
-        //update the poll id counter
-        return new Promise(function(resolve, reject) {counters.findOneAndUpdate({ _id: "pollcounter" },
+    //create list of answers and # of votes
+    for (var answer in answerlist) {
+        votes.push(0);
+    }
+    //update the poll id counter
+    return new Promise(function(resolve, reject) {counters.findOneAndUpdate({ _id: "pollcounter" },
     { $inc: { seq: 1 } }, function(err, results){if (err) {reject(err)} else {resolve(results)}})})
     .then(function(result) {
             console.log(result.value)
             var pollid = hashids.encode(result.value.seq);
             console.log("Creating poll with id " + pollid);
+            //insert poll
             return new Promise(function(resolve, reject) {polls.insert({
                 "usersvoted": [],
                 "userid": Number(userid),
@@ -176,6 +174,8 @@ client = new tmi.client({
     channels: []
 });
 client.connect();
+
+//triggers when a user submits a chat message to a channel I am watching
 client.on("chat", function(channel, userstate, message, self) {
     console.log(message);
     var number = /[1-9][0-9]*/;
@@ -186,9 +186,9 @@ client.on("chat", function(channel, userstate, message, self) {
 
 
 });
-//only seems to work when joining a channel in the channels list
+//triggers when a user joins
 client.on("join", function(channel, username, self) {
-    if (self) {
+    if (self) {//when I join (only works if joining a channel in the channel's list)
         var options = {
             url: "https://api.twitch.tv/kraken/users?login=" + channel.substring(1, channel.length),
             headers: {
@@ -196,6 +196,7 @@ client.on("join", function(channel, username, self) {
                 'Accept': "application/vnd.twitchtv.v5+json"
             }
         };
+        //Test function, creates a test poll for existing channels
         request(options,
             function(err, request, body) {
                 if (err) {
@@ -209,7 +210,8 @@ client.on("join", function(channel, username, self) {
                 }
                 createPoll(channelToID[channel], "What is 1+1?", a);
                 console.log(channelToID);
-            });
+            }
+        );
     }
 });
 
