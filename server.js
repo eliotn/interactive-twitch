@@ -86,13 +86,22 @@ function addVote(pollid, vote, user) {
     }, function(err, result){if (err){ reject(err);}else{ resolve(result);}})})
     .then( function(results) {
          return new Promise(function(resolve, reject) {
+            if (user == undefined) {
+                if (results.anonymousVotes) {
+                    user = "anonymous";
+                }
+                else {
+                    reject("Anonymous users cannot vote on this poll.");
+                    return;
+                }
+            }
             if (!results) {
                 reject("Poll not found");
             }
             else if (vote < 0 || results.answers.length - 1 < vote) {
                 reject("Invalid vote");
             }
-            else if (results.usersvoted.indexOf(Number(user)) != -1) {
+            else if (results.usersvoted.indexOf(Number(user)) !== -1) {
                 reject("You already voted");
             }
             else {
@@ -106,7 +115,12 @@ function addVote(pollid, vote, user) {
             }
         });
     }).then(function(results){
-        return new Promise(function(resolve, reject) {polls.updateOne({
+        return new Promise(function(resolve, reject) {
+            if (user === "anonymous") {
+                resolve({});
+                return;
+            }
+            polls.updateOne({
                     "pollid": pollid
                 }, {
                     $push: {
@@ -125,7 +139,7 @@ function addVote(pollid, vote, user) {
 }
 
 //returns a promise that will create the poll
-function createPoll(userid, question, answerlist) {
+function createPoll(userid, question, answerlist, allowAnonymousVotes, resultsVisible) {
     var answers = answerlist;
     var votes = [];
     //create list of answers and # of votes
@@ -146,7 +160,9 @@ function createPoll(userid, question, answerlist) {
                 "pollid": pollid,
                 "question": question,
                 "answers": answers,
-                "votes": votes
+                "votes": votes,
+                "publicResults": !!resultsVisible,
+                "anonymousVotes": !!allowAnonymousVotes
                 }, function(err, results){if (err) {reject(err)} else {resolve(pollid)}});
             });
                 
@@ -180,7 +196,7 @@ client.connect();
 //triggers when a user submits a chat message to a channel I am watching
 client.on("chat", function(channel, userstate, message, self) {
     console.log(message);
-    var number = /[1-9][0-9]*/;
+    var number = /^[1-9][0-9]*/;
     var match = number.exec(message);
     if (match) {
         addVote(channelToPoll[channel], Number(match) - 1, userstate["user-id"])
@@ -393,11 +409,13 @@ app.post('/api/poll', passport.authenticate("bearer", {
     }
 
     else {
-        client.join("#" + req.user.username);
-
-        Promise.resolve(createPoll(Number(req.user.userid), String(req.body.question), req.body.answers))
+        var allowAnonymousVotes = !!req.body.allowAnonymousVotes && !!Number(req.body.allowAnonymousVotes);
+        var resultsVisible = !!req.body.resultsVisible && !!Number(req.body.resultsVisible);
+        Promise.resolve(createPoll(Number(req.user.userid), String(req.body.question), req.body.answers,
+            allowAnonymousVotes, resultsVisible))
         .then(function(result_json) {
             res.json(result_json);
+            client.join("#" + req.user.username);
             channelToPoll["#" + req.user.username] = result_json["id"];
             client.say("#" + req.user.username, "Poll has been created with question '" + req.body.question + "'");
             
