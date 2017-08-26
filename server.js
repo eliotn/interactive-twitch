@@ -234,18 +234,11 @@ passport.use(new twitchStrategy({
     
     
             console.log(profile);
-            tokens.update({
-                "userid": profile.id
-            },
-            {
-                $set: {
-                    "username": profile.displayName,
-                    "access_token": accessToken,
-                    "tokenUpdateTime": new Date()
-                }
-            },
-            {
-                upsert:true
+            tokens.insert({
+                "userid": profile.id,
+                "username": profile.displayName,
+                "access_token": accessToken,
+                "tokenUpdateTime": new Date()
             });
             users.update({
                 "userid": profile.id
