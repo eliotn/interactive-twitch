@@ -146,11 +146,11 @@ function createPoll(userid, question, answerlist) {
                 "question": question,
                 "answers": answers,
                 "votes": votes
-                }, function(err, results){if (err) {reject(err)} else {resolve(results)}});
+                }, function(err, results){if (err) {reject(err)} else {resolve(pollid)}});
             });
                 
         })
-    .then(function(result) {return {"note":"Poll Added"};})
+    .then(function(pollid) {return {"note":"Poll Added", "id":pollid};})
     .catch(function(err) {return Promise.reject({"err":err})});
 }
 
@@ -159,7 +159,8 @@ var tmi = require("tmi.js");
 var request = require('request');
 var client;
 const fs = require('fs');
-var channelToID = {};
+//var channelToID = {};
+var channelToPoll = {};//
 client = new tmi.client({
     identity: {
         username: "ejg_dnd",
@@ -181,7 +182,7 @@ client.on("chat", function(channel, userstate, message, self) {
     var number = /[1-9][0-9]*/;
     var match = number.exec(message);
     if (match) {
-        addVote(channelToID[channel], Number(match) - 1, userstate["user-id"]);
+        addVote(channelToPoll[channel], Number(match) - 1, userstate["user-id"]);
     }
 
 
@@ -203,13 +204,11 @@ client.on("join", function(channel, username, self) {
                     throw err;
                 }
                 //console.log(JSON.parse(body)["users"]);
-                channelToID[channel] = Number(JSON.parse(body)["users"][0]["_id"]);
                 var a = [];
                 for (var i = 0; i < 4; i++) {
                     a.push(i);
                 }
-                createPoll(channelToID[channel], "What is 1+1?", a);
-                console.log(channelToID);
+                createPoll(Number(JSON.parse(body)["users"][0]["_id"]), "What is 1+1?", a);
             }
         );
     }
@@ -397,7 +396,7 @@ app.post('/api/poll', passport.authenticate("bearer", {
         Promise.resolve(createPoll(Number(req.user.userid), String(req.body.question), req.body.answers))
         .then(function(result_json) {
             res.json(result_json);
-            channelToID["#" + req.user.username] = req.user.userid;
+            channelToPoll["#" + req.user.username] = result_json["id"];
             client.say("#" + req.user.username, "Poll has been created with question '" + req.body.question + "'");
             
         })
@@ -518,9 +517,9 @@ function getActivity(req, res, next, user) {
         if (err) console.log(err);
         console.log(results);
         var answers = [];
-        //I created 1 or more polls
+        //I am logged in and viewing my poll view/creation
         if (user && user.userid == req.params.userid) {
-            if (results && results.length > 0) {
+            if (results && results.length > 0) {//I created 1 or more polls
                 template["graph"] = "graph";
                 template.polltitles = [];
                 for (var i = 0; i < results.length; i++) {
