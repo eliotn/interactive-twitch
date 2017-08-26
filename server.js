@@ -292,11 +292,14 @@ passport.use(
     )
 );
 
-//session is set to false because we aren't using sessions
+//session is set to false in api calls because we aren't using sessions
 //thanks https://jeroenpelgrims.com/token-based-sessionless-auth-using-express-and-passport
+
+//Login with twitch api
 app.get('/auth/twitch/', passport.authenticate("twitch", {
     session: false
 }));
+//callback from twitch api when the login is successful
 app.get('/auth/twitch/callback', passport.authenticate("twitch", {
     session: false,
     failureRedirect: '/'
@@ -304,6 +307,8 @@ app.get('/auth/twitch/callback', passport.authenticate("twitch", {
 
     res.redirect('/activity/' + req.user.userid + '?access_token=' + req.user.access_token);
 });
+
+//Logout from current device
 app.get('/auth/logout', passport.authenticate("bearer", {
     session: false
 }), function(req, res) {
@@ -316,6 +321,8 @@ app.get('/auth/logout', passport.authenticate("bearer", {
     });
     
 });
+
+//add a vote to the current poll
 app.put('/api/vote/:pollid/:vote', function(req, res) {
     Promise.resolve(addVote(req.params.pollid, req.params.vote - 1)).then(
         function (voteresult) {
@@ -366,14 +373,28 @@ app.get('/api/poll', passport.authenticate("bearer", {
         return;
     });
 });
+
+//Post - creates a new poll, requires json in
 app.post('/api/poll', passport.authenticate("bearer", {
     session: false
 }), function(req, res) {
     console.log(req.body);
-    if (req.body.question && req.body.answers) {
+    if (!req.body.question) {
+        res.json({
+            "err": "A new poll needs a question"
+        });
+    }
+    else if (!(req.body.answers instanceof Array)) {
+        res.json({
+            "err": "A new poll needs a list of answers"
+        });
+        
+    }
+
+    else {
         client.join("#" + req.user.username);
 
-        Promise.resolve(createPoll(Number(req.user.userid), req.body.question, req.body.answers))
+        Promise.resolve(createPoll(Number(req.user.userid), String(req.body.question), req.body.answers))
         .then(function(result_json) {
             res.json(result_json);
             channelToID["#" + req.user.username] = req.user.userid;
@@ -384,12 +405,6 @@ app.post('/api/poll', passport.authenticate("bearer", {
             res.json(err_json);
         });
         
-    }
-
-    else {
-        res.json({
-            "Note": "You posted an invalid poll"
-        });
     }
 });
 
