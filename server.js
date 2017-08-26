@@ -518,9 +518,9 @@ function getActivity(req, res, next, user) {
         if (err) console.log(err);
         console.log(results);
         var answers = [];
-        //I created the polls
+        //I created 1 or more polls
         if (user && user.userid == req.params.userid) {
-            if (results) {
+            if (results && results.length > 0) {
                 template["graph"] = "graph";
                 template.polltitles = [];
                 for (var i = 0; i < results.length; i++) {

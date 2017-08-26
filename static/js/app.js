@@ -93,7 +93,7 @@ function submitPoll() {
   var question = document.getElementById('question').value;
   _xhttp.onreadystatechange = function(e) {
     if (_xhttp.readyState === 4) {
-      if (_xhttp.status === 401) {
+      if (_xhttp.status === 403) {
         unauthorized();
         return;
       }
@@ -107,7 +107,6 @@ function submitPoll() {
   _xhttp.open("POST", "/api/poll" + location.search);
   _xhttp.setRequestHeader('Content-Type', 'application/json');
   console.log(question);
-  //make async
   _xhttp.send(JSON.stringify({
     "question": question,
     "answers": answers
