@@ -56,23 +56,21 @@ var Hashids = require('hashids')
 var hashids = new Hashids(HASH_SECRET);
 
 function deletePoll(pollid) {
-    var returnval = {};
-    polls.findOneAndDelete({
-        "pollid": Number(pollid)
+    return new Promise(function(resolve, reject) {polls.findOneAndDelete({
+        "pollid": pollid
     }, function(err, res) {
-        if (err) returnval = {
+        if (err) reject({
             "err": err
-        };
-        else {
-            if (res) {
-                returnval = {};
-            }
-            returnval = {
-                "err": "resource not found"
-            };
+        });
+        else if (res) {
+            resolve({});
         }
-    });
-    return returnval;
+        else {
+            reject({
+                "err": "resource not found"
+            });
+        }
+    })});
 }
 
 
@@ -400,16 +398,19 @@ app.post('/api/poll', passport.authenticate("bearer", {
     }
 });
 
-app.delete('/api/poll/', passport.authenticate("bearer", {
+app.delete('/api/poll/:pollid', passport.authenticate("bearer", {
     session: false
 }), function(req, res) {
-    var delete_status = deletePoll(req.user.userid);
-    if ("err" in delete_status) {
-        res.status(204).send(delete_status.err);
-    }
-    client.say("#" + req.user.username, "The poll is over!");
-    client.part('#' + req.user.username);
-    res.status(204).send("Deleted");
+    deletePoll(req.params.pollid)
+    .then(function(result) {
+        client.say("#" + req.user.username, "The poll is over!");
+        client.part('#' + req.user.username);
+        res.status(204).send("Deleted");
+    })
+    .catch(function (err) {
+        res.status(204).send(err["err"]);
+    });
+    
 });
 
 //debug functions don't use in production server

@@ -65,7 +65,8 @@ function vote(pollid) {
       document.getElementById("voteContainer" + pollid).innerHTML = "<h3>Your vote has been recorded.  Thank you.</h3>";
     }
   }
-  _xhttp.open("PUT", "/api/vote/" + pollid + "/" + selection.options[selection.selectedIndex].value);
+  _xhttp.open("PUT", "/api/vote/" + pollid + "/" + selection.options[selection.selectedIndex].value + 
+              "/" + location.search);
   _xhttp.setRequestHeader('Content-Type', 'application/json');
   _xhttp.send();
 }
@@ -77,7 +78,7 @@ function deletePoll(pollid) {
       location.reload();
     }
   }
-  _xhttp.open("DELETE", "/api/poll/" + pollid);
+  _xhttp.open("DELETE", "/api/poll/" + pollid + "/" + location.search);
   _xhttp.setRequestHeader('Content-Type', 'application/json');
   _xhttp.send();
 }
