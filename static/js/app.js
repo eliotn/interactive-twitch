@@ -91,6 +91,8 @@ function submitPoll() {
     answers.push(answerelements[i].children[1].value);
   }
   var question = document.getElementById('question').value;
+  var resultsVisible = document.getElementById("resultsVisible").checked;
+  var allowAnonymousVotes = document.getElementById("allowAnonymousVotes").checked;
   _xhttp.onreadystatechange = function(e) {
     if (_xhttp.readyState === 4) {
       if (_xhttp.status === 403) {
@@ -109,7 +111,9 @@ function submitPoll() {
   console.log(question);
   _xhttp.send(JSON.stringify({
     "question": question,
-    "answers": answers
+    "answers": answers,
+    "resultsVisible": Number(resultsVisible),
+    "allowAnonymousVotes": Number(allowAnonymousVotes)
   }));
 }
 
