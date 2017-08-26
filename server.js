@@ -85,22 +85,26 @@ function addVote(pollid, vote, user) {
         "pollid": pollid
     }, function(err, result){if (err){ reject(err);}else{ resolve(result);}})})
     .then( function(results) {
-         return new Promise(function(resolve, reject) {if (!results) {
-            reject("Poll not found");
-        }
-        if (vote < 0 || results.answers.length - 1 < vote) {
-            reject("Invalid vote");
-        }
-        else if (results.usersvoted.indexOf(Number(user)) != -1) {
-            reject("You already voted");
-        }
-       polls.updateOne({
-            "pollid": pollid
-        }, {
-            $inc: {
-                ["votes." + String(vote)]: 1
+         return new Promise(function(resolve, reject) {
+            if (!results) {
+                reject("Poll not found");
             }
-        }, function(err, result) {console.log("vote finished"); if (err){ reject(err);}else{ resolve(result);}})});
+            else if (vote < 0 || results.answers.length - 1 < vote) {
+                reject("Invalid vote");
+            }
+            else if (results.usersvoted.indexOf(Number(user)) != -1) {
+                reject("You already voted");
+            }
+            else {
+               polls.updateOne({
+                    "pollid": pollid
+                }, {
+                    $inc: {
+                        ["votes." + String(vote)]: 1
+                    }
+                }, function(err, result) {console.log("vote finished"); if (err){ reject(err);}else{ resolve(result);}})
+            }
+        });
     }).then(function(results){
         return new Promise(function(resolve, reject) {polls.updateOne({
                     "pollid": pollid
