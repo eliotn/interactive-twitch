@@ -38,6 +38,21 @@
 
 
         </div>
+        {{#polls}}
+            <div class="grid-x">
+                <div class="cell auto" id="voteContainer{{id}}">
+                    <label>{{question}}</label>
+                    <select id="voteselection{{id}}">
+                      {{#answers}}
+                      <option value="{{index}}">{{value}}</option>
+                      {{/answers}} 
+                    </select>
+                    <div class="large-4 cell">
+                        <a onClick="vote('{{id}}')" class="button">Vote</a>
+                    </div>
+                </div>
+            </div>
+            {{/polls}} 
         <div class="grid-x">
             {{#graph}}
             <div class="medium-6 cell">
@@ -57,19 +72,7 @@
                     {{/polltitles}}
                 </div>
             </div>
-            {{/graph}} {{#polls}}
-            <div class="cell auto" id="voteContainer{{id}}">
-                <label>{{question}}</label>
-                <select id="voteselection{{id}}">
-                  {{#answers}}
-                  <option value="{{index}}">{{value}}</option>
-                  {{/answers}} 
-                </select>
-                <div class="large-4 cell">
-                    <a onClick="vote('{{id}}')" class="button">Vote</a>
-                </div>
-            </div>
-            {{/polls}} {{#polltypes}}
+            {{/graph}} {{#polltypes}}
             <div class="auto cell" id="settingsContainer">
                 <ul class="tabs" data-tabs id="twitch-tabs">
                     <li class="tabs-title is-active"><a href="#vote" aria-selected="true">Poll</a></li>
