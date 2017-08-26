@@ -558,20 +558,23 @@ function getActivity(req, res, next, user) {
         //I am voting on the polls
         else {
             for (var poll of results) {
-                template.polls = template.polls || [];
-                var templatepoll = {
-                    "question": poll.question,
-                    "answers": [],
-                    "id": poll.pollid
+                //user must be logged in or poll must allow anonymous votes
+                if (user || poll.anonymousVotes) {
+                    template.polls = template.polls || [];
+                    var templatepoll = {
+                        "question": poll.question,
+                        "answers": [],
+                        "id": poll.pollid
+                    }
+                    for (var i = 0; i < poll.answers.length; i++) {
+                        templatepoll.answers.push({
+                            "index": i + 1,
+                            "value": poll.answers[i]
+                        });
+                    }
+                    template.polls.push(templatepoll);
+                    template.polltitle = "Viewing someone else's poll";
                 }
-                for (var i = 0; i < poll.answers.length; i++) {
-                    templatepoll.answers.push({
-                        "index": i + 1,
-                        "value": poll.answers[i]
-                    });
-                }
-                template.polls.push(templatepoll);
-                template.polltitle = "Viewing someone else's poll";
             }
 
         }
