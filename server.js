@@ -85,17 +85,16 @@ function addVote(pollid, vote, user) {
         "pollid": pollid
     }, function(err, result){if (err){ reject(err);}else{ resolve(result);}})})
     .then( function(results) {
-        if (!results) {
-            throw "Poll not found";
+         return new Promise(function(resolve, reject) {if (!results) {
+            reject("Poll not found");
         }
         if (vote < 0 || results.answers.length - 1 < vote) {
-            throw "Invalid vote";
+            reject("Invalid vote");
         }
         else if (results.usersvoted.indexOf(Number(user)) != -1) {
-            throw "You already voted";
+            reject("You already voted");
         }
-        console.log("first");
-        return new Promise(function(resolve, reject) {polls.updateOne({
+       polls.updateOne({
             "pollid": pollid
         }, {
             $inc: {
@@ -103,7 +102,6 @@ function addVote(pollid, vote, user) {
             }
         }, function(err, result) {console.log("vote finished"); if (err){ reject(err);}else{ resolve(result);}})});
     }).then(function(results){
-        console.log("Past one then");
         return new Promise(function(resolve, reject) {polls.updateOne({
                     "pollid": pollid
                 }, {
@@ -112,8 +110,7 @@ function addVote(pollid, vote, user) {
                     }
                 }, function(err, result){if (err){ reject(err);}else{ resolve(result);}})});
     }).then(function(results) {
-        
-        console.log("Promise completed");   
+          
         return Promise.resolve({"Note:":"vote counted"});
     })
     .catch(function(err) {
@@ -182,7 +179,8 @@ client.on("chat", function(channel, userstate, message, self) {
     var number = /[1-9][0-9]*/;
     var match = number.exec(message);
     if (match) {
-        addVote(channelToPoll[channel], Number(match) - 1, userstate["user-id"]);
+        addVote(channelToPoll[channel], Number(match) - 1, userstate["user-id"])
+        .catch(function(err) {console.log(err);});
     }
 
 
