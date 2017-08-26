@@ -1,7 +1,10 @@
 # interactive-twitch
 
 A new way for twitch broadcasters to interact with their viewers.  A simple voting app inspired by the [freeCodeCamp Voting App project](https://www.freecodecamp.org/challenges/build-a-voting-app)
-but with the addition of integration with twitch chat.
+but with the addition of integration with twitch chat. 
+
+Twitch broadcasters can create polls that can be voted on in twitch chat or on the website.  This enables twitch broadcasters
+to easily improve interactability with viewers.
 
 ## Usage
 
