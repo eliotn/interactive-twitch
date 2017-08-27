@@ -160,7 +160,7 @@ function makeChart(idx, data) {
 
 function getPolls() {
   var _xhttp = new XMLHttpRequest();
-  document.getElementById('question').classList;
+  //document.getElementById('question').classList;
   
   //make async
   _xhttp.onreadystatechange = function(e) {
