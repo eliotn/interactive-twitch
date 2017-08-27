@@ -355,40 +355,41 @@ app.put('/api/vote/:pollid/:vote', function(req, res) {
     
 });
 
-//get all polls for a user
-app.get('/api/poll', passport.authenticate("bearer", {
-    session: false
-}), function(req, res) {
-    polls.find({
-        "userid": req.user.userid
-    }).toArray(function(err, results) {
-        if (err) {
-            res.json({
-                "err": err
-            });
-            return;
-        }
-        if (!results) {
-            res.json({
-                "err": "This user does not have a poll."
-            });
-            return;
-        }
-        var result_json = [];
-        for (var poll of results) {
-            console.log(poll);
+app.get('/ap')
+
+//get all polls for me
+app.get('/api/poll/:pollid', function(req, res, next) { 
+    passport.authenticate("bearer", {//optional login because users can always view their poll
+        session: false
+    }, function (error, user, info) {
+        var parameters = { "pollid" :req.params.pollid};
+        polls.findOne(parameters, function(err, results) {
+            if (err) {
+                res.json({
+                    "err": err
+                });
+                return;
+            }
+            if (!results) {
+                res.json({
+                    "err": "This user does not have a poll."
+                });
+                return;
+            }
+            if (!results.publicResults && (!user || results.userid !== user.userid)) {
+                parameters.publicResults = true;
+            }
             var poll_representation = {
-            "question": poll.question,
-            "answers": poll.answers,
-            "votes": poll.votes
+                "question": results.question,
+                "answers": results.answers,
+                "votes": results.votes
             };
-            result_json.push(poll_representation);
-        }
-        console.log(result_json);
-        res.write(JSON.stringify({"polls":result_json}));
-        res.end();
-        return;
-    });
+            console.log(poll_representation);
+            res.write(JSON.stringify(poll_representation));
+            res.end();
+            return;
+        });
+    })(req, res, next);
 });
 
 //Post - creates a new poll, requires json in

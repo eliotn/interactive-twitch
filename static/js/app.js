@@ -159,29 +159,27 @@ function makeChart(idx, data) {
 }
 
 function getPolls() {
-  var _xhttp = new XMLHttpRequest();
   //document.getElementById('question').classList;
-  
-  //make async
-  _xhttp.onreadystatechange = function(e) {
-    if ( _xhttp.status === 401) {
-      unauthorized();
-      return;
-    }
-    if (_xhttp.readyState === 4 && _xhttp.status === 200) {
-      var response = JSON.parse(_xhttp.responseText);
-      if ("polls" in response) {
-        console.log(response);
-        for (var i = 0; i < response.polls.length; i++) {
-          makeChart(i, response.polls[i]);
-        }
+  var polls = document.getElementsByClassName("pollChart");
+  for (var poll of polls) {
+    //ensure index and request is in closure
+    let index=poll.getAttribute("data-index"), _xhttp=new XMLHttpRequest();
+    //make async
+    _xhttp.onreadystatechange = function(e) {
+      if ( _xhttp.status === 401) {
+        unauthorized();
+        return;
+      }
+      if (_xhttp.readyState === 4 && _xhttp.status === 200) {
+        var response = JSON.parse(_xhttp.responseText);
+        makeChart(index, response);
       }
     }
+    _xhttp.open("GET", "/api/poll/" + poll.getAttribute("data-id") + location.search);
+    _xhttp.send();
   }
-  _xhttp.open("GET", "/api/poll" + location.search);
-  _xhttp.send();
 }
 
 //TODO: If statement for this
-console.log("Getting polls");
+
 getPolls();

@@ -65,7 +65,7 @@
                     {{#polltitles}}
                     <div class="tabs-panel {{isactive}}" id="chartContainer{{index}}">
                         <div class="cell">
-                            <canvas id="myChart{{index}}" width="100" height="100"></canvas>
+                            <canvas class="pollChart" data-id="{{id}}" data-index="{{index}}" id="myChart{{index}}" width="100" height="100"></canvas>
                             <a onClick="deletePoll('{{id}}')" class="button">End your poll</a>
                         </div>
                     </div>
