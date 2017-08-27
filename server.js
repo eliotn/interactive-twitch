@@ -545,7 +545,7 @@ function getActivity(req, res, next, user) {
                 template.polltitles = [];
                 for (var i = 0; i < results.length; i++) {
                     template.polltitles.push({"question":results[i].question, "index":i, "selected":(i == 0),
-                        "isactive":((i==0)?"is-active":""), "id":results[i].pollid
+                        "isactive":((i==0)?"is-active":""), "id":results[i].pollid, "candelete":true
                     });
                 }
             }
