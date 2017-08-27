@@ -1,26 +1,4 @@
 $(document).foundation();
-/*$(document).on("submit", function(ev) {
-  ev.preventDefault();
-  console.log("Submit for form id "+ev.target.id+" intercepted");
-});*/
-
-//http://foundation.zurb.com/forum/posts/37267-foundation-6-abide-trigger-without-submit-button
-/*$("#pollform").bind("submit",function(e) {
-  e.preventDefault();
-  console.log("submit intercepted");
-  return false;
-});*/
-//var elem = new Foundation.Abide($("pollform"), {});
-
-//$('#pollform').foundation('resetForm');
-//$('#pollform').foundation('validateForm');
-/*$("#pollform").on("forminvalid.zf.abide", function(e,target) {
-  console.log("form is invalid");
-}).on("formvalid.zf.abide", function(e,target) {
-  console.log("form is valid");
-  submitPoll();  
-});*/
-
 
 function logout() {
    window.location.href='/auth/logout' + window.location.search;
@@ -33,6 +11,7 @@ function getActivity(userid) {
   window.location.href='/activity/' + userid + window.location.search;
 }
 
+//adds an option for an additional answer
 function addAnswer() {
   var answernum = document.getElementsByClassName('answerselection').length + 1;
   document.getElementById("voteanswers").innerHTML = document.getElementById("voteanswers").innerHTML +
@@ -41,12 +20,9 @@ function addAnswer() {
         '<input id="answer' + answernum + '" class="input-group-field" type="text" placeholder="What is one possible answer?" pattern="pollentry" required/>' +
     '</div>' +
     '<span class="form-error" data-form-error-for="answer' + answernum + '">An answer is required.</span>';
-    /*elem.destroy();
-    elem = new Foundation.Abide($("pollform"), {});
-    $('#pollform').foundation('resetForm');
-    $('#pollform').foundation('validateForm');*/
 }
 
+//removes an option for an additional answer if there are at least 3
 function removeAnswer() {
   var answers = document.getElementsByClassName('answerselection');
   if (answers.length > 2) {
@@ -54,6 +30,7 @@ function removeAnswer() {
   }
 }
 
+//submit a vote on a poll to the api
 function vote(pollid) {
   var _xhttp = new XMLHttpRequest();
   //var userid = window.location.pathname.split("/")[2];
@@ -71,6 +48,7 @@ function vote(pollid) {
   _xhttp.send();
 }
 
+//submit a request to delete a poll
 function deletePoll(pollid) {
   var _xhttp = new XMLHttpRequest();
   _xhttp.onreadystatechange = function(e) {
@@ -163,7 +141,7 @@ function getPolls() {
   var polls = document.getElementsByClassName("pollChart");
   for (var poll of polls) {
     //ensure index and request is in closure
-    let index=poll.getAttribute("data-index"), _xhttp=new XMLHttpRequest();
+    let index=poll.getAttribute("data-index"),_xhttp=new XMLHttpRequest();
     //make async
     _xhttp.onreadystatechange = function(e) {
       if ( _xhttp.status === 401) {
