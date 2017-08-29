@@ -550,7 +550,7 @@ function getActivity(req, res, next, user) {
             template.polltypes = ["voting"]
         }
         //can't find the polls
-        else if (results == null) {
+        else if (results.length <= 0) {
             res.status(404).send("Poll not found");
             return;
         }
@@ -621,9 +621,32 @@ app.get('/', function(req, res, next) {
 });
 
 
+// Handle 404
+//thanks https://stackoverflow.com/questions/6528876/how-to-redirect-404-errors-to-a-page-in-expressjs
+app.use(function(req, res, next) {
+  res.status(404);
+
+  // respond with html page
+  if (req.accepts('html')) {
+    res.sendFile(path.join(__dirname, 'static/error.html'));
+    return;
+  }
+
+  // respond with json
+  if (req.accepts('json')) {
+    res.send({ "err": 'Route not found' });
+    return;
+  }
+
+  // default to plain-text. send()
+  res.type('txt').send('Not found');;
+});
+
 app.listen(PORT, function() {
     console.log("listening on port " + PORT);
 });
+
+
 
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
