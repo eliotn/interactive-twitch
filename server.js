@@ -1,4 +1,4 @@
-const SERVER = process.env.SERVER_URL || "https://test-eliotn.c9users.io";
+const SERVER = process.env.SERVER_URL || "https://test-eliotn.c9users.io/";
 const PORT = process.env.PORT || 3000;
 const DROP_DATA = false;
 const MONGO_URL = process.env.MONGO_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/twitchvotes';
@@ -171,7 +171,7 @@ function createPoll(userid, question, answerlist, allowAnonymousVotes, resultsVi
     .catch(function(err) {return Promise.reject({"err":err})});
 }
 
-
+//setup tmp client
 var tmi = require("tmi.js");
 var request = require('request');
 var client;
@@ -355,9 +355,7 @@ app.put('/api/vote/:pollid/:vote', function(req, res) {
     
 });
 
-app.get('/ap')
-
-//get all polls for me
+//get poll with the given id
 app.get('/api/poll/:pollid', function(req, res, next) { 
     passport.authenticate("bearer", {//optional login because users can always view their poll
         session: false
@@ -558,6 +556,8 @@ function getActivity(req, res, next, user) {
         }
         //I am voting on the polls
         else {
+            template["user"] = results.username;
+            template["url"] = SERVER + "/activity/" + req.params.userid;
             for (var poll of results) {
                 if (poll.publicResults) {//show results
                     template["graph"] = "graph";
