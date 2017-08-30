@@ -639,7 +639,7 @@ app.use(function(req, res, next) {
   }
 
   // default to plain-text. send()
-  res.type('txt').send('Not found');;
+  res.type('txt').send('404 Error - Url not found');;
 });
 
 app.listen(PORT, function() {

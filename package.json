@@ -39,6 +39,7 @@
   "devDependencies": {
     "chai": "^4.1.0",
     "gulp": "^3.9.1",
+    "gulp-htmlclean": "^2.7.15",
     "mocha": "^3.4.2",
     "supertest": "^3.0.0"
   }
